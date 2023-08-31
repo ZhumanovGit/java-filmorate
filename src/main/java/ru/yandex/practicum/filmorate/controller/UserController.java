@@ -31,10 +31,11 @@ public class UserController {
             throw new ValidateException("Такой пользователь уже существует");
         }
 
-        if (user.getName().isBlank()) {
+        if (user.getName().isBlank() || user.getName() == null) {
             user.setName(user.getLogin());
         }
 
+        user.setId(user.hashCode());
         users.put(user.getId(), user);
         log.info("Пользователь с id = {} создан и добавлен в систему", user.getId());
         return user;
