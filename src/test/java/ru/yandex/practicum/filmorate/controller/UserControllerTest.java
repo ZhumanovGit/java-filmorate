@@ -38,7 +38,7 @@ class UserControllerTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build());
         User secondUser = controller.createUser(User.builder()
-                .id(1)
+                .id(2)
                 .name("secondTestUser")
                 .email("secondTest-user@ya.ru")
                 .login("secondTestLogin")
@@ -47,8 +47,8 @@ class UserControllerTest {
 
         List<User> users = controller.getUsers();
 
-        User ourFirstUser = users.get(1);
-        User ourSecondUser = users.get(0);
+        User ourFirstUser = users.get(0);
+        User ourSecondUser = users.get(1);
 
         assertEquals(2, users.size());
         assertEquals(firstUser, ourFirstUser);
@@ -64,7 +64,6 @@ class UserControllerTest {
                 .login("testLogin")
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
-        user.setId(user.hashCode());
 
         User ourUser = controller.createUser(User.builder()
                 .id(1)
@@ -79,7 +78,7 @@ class UserControllerTest {
 
     @Test
     public void shouldThrowExceptionIfUserHasNoEmail() {
-        assertThrows(NullPointerException.class, () ->  User.builder()
+        assertThrows(NullPointerException.class, () -> User.builder()
                 .id(1)
                 .name("testUser")
                 .login("testLogin")
@@ -90,21 +89,21 @@ class UserControllerTest {
 
     @Test
     public void shouldThrowExceptionIfUserHasBlankEmail() {
-        Throwable throwable = assertThrows(ValidateException.class, () ->  controller
+        Throwable throwable = assertThrows(ValidateException.class, () -> controller
                 .createUser(User.builder()
-                .id(1)
-                .name("testUser")
-                .email("  ")
-                .login("testLogin")
-                .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
-                .build()));
+                        .id(1)
+                        .name("testUser")
+                        .email("  ")
+                        .login("testLogin")
+                        .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
+                        .build()));
 
         assertEquals("Почта не может быть пустой", throwable.getMessage());
     }
 
     @Test
     public void shouldThrowExceptionIfUserHasNoSpecCharInEmail() {
-        Throwable throwable = assertThrows(ValidateException.class, () ->  controller
+        Throwable throwable = assertThrows(ValidateException.class, () -> controller
                 .createUser(User.builder()
                         .id(1)
                         .name("testUser")
@@ -118,7 +117,7 @@ class UserControllerTest {
 
     @Test
     public void shouldThrowExceptionIfUserHasNoLogin() {
-        assertThrows(NullPointerException.class, () ->  User.builder()
+        assertThrows(NullPointerException.class, () -> User.builder()
                 .id(1)
                 .name("testUser")
                 .email("testEmail@ya.ru")
@@ -128,7 +127,7 @@ class UserControllerTest {
 
     @Test
     public void shouldThrowExceptionIfUserHasBlankLogin() {
-        Throwable throwable = assertThrows(ValidateException.class, () ->  controller
+        Throwable throwable = assertThrows(ValidateException.class, () -> controller
                 .createUser(User.builder()
                         .id(1)
                         .name("testUser")
@@ -142,7 +141,7 @@ class UserControllerTest {
 
     @Test
     public void shouldThrowExceptionIfUserLoginHasSpace() {
-        Throwable throwable = assertThrows(ValidateException.class, () ->  controller
+        Throwable throwable = assertThrows(ValidateException.class, () -> controller
                 .createUser(User.builder()
                         .id(1)
                         .name("testUser")
@@ -156,7 +155,7 @@ class UserControllerTest {
 
     @Test
     public void shouldThrowExceptionIfBirthdayIsAfterThanNow() {
-        Throwable throwable = assertThrows(ValidateException.class, () ->  controller
+        Throwable throwable = assertThrows(ValidateException.class, () -> controller
                 .createUser(User.builder()
                         .id(1)
                         .name("testUser")
@@ -224,12 +223,6 @@ class UserControllerTest {
                 .build()));
         assertEquals("Такого пользователя не существует", throwable.getMessage());
     }
-
-
-
-
-
-
 
 
 }

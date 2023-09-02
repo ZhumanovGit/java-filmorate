@@ -74,7 +74,7 @@ public class FilmController {
         }
 
         if (film.getDuration() <= 0) {
-            log.warn("ValidationException, отрицательная продолжительность фильма {}", film.getDuration());
+            log.warn("ValidationException, отрицательная продолжительность фильма");
             throw new ValidateException("Продолжительность не может быть отрицательной");
         }
     }

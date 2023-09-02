@@ -77,7 +77,7 @@ class FilmControllerTest {
 
     @Test
     public void shouldThrowExceptionIfFilmHasNoName() {
-        assertThrows(NullPointerException.class, () ->  Film.builder()
+        assertThrows(NullPointerException.class, () -> Film.builder()
                 .id(1)
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
@@ -87,19 +87,22 @@ class FilmControllerTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfFilmHasNoDuration() {
-        assertThrows(NullPointerException.class, () ->  Film.builder()
+    public void shouldThrowExceptionIfFilmHasBadDuration() {
+        Throwable throwable = assertThrows(ValidateException.class, () -> controller.createFilm(Film.builder()
                 .id(1)
                 .name("testFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
-                .build());
+                .duration(0)
+                .build()));
+
+        assertEquals("Продолжительность не может быть отрицательной", throwable.getMessage());
 
     }
 
     @Test
     public void shouldThrowExceptionIfFilmHasNoReleaseDate() {
-        assertThrows(NullPointerException.class, () ->  Film.builder()
+        assertThrows(NullPointerException.class, () -> Film.builder()
                 .id(1)
                 .name("testFilm")
                 .description("test desc for film")
@@ -110,7 +113,7 @@ class FilmControllerTest {
 
     @Test
     public void shouldThrowExceptionIfFilmHasBlankName() {
-        Throwable throwable = assertThrows(ValidateException.class, () ->  controller.createFilm(Film.builder()
+        Throwable throwable = assertThrows(ValidateException.class, () -> controller.createFilm(Film.builder()
                 .id(1)
                 .name("   ")
                 .description("test desc for film")
@@ -124,7 +127,7 @@ class FilmControllerTest {
 
     @Test
     public void shouldThrowExceptionIfDescriptionIsLongerThan200Chars() {
-        Throwable throwable = assertThrows(ValidateException.class, () ->  controller.createFilm(Film.builder()
+        Throwable throwable = assertThrows(ValidateException.class, () -> controller.createFilm(Film.builder()
                 .id(1)
                 .name("testName")
                 .description("very long test desc for film very long test desc for film very long test desc for " +
@@ -142,7 +145,7 @@ class FilmControllerTest {
 
     @Test
     public void shouldThrowExceptionIfFilmReleaseDateIsBeforeThan28DecemberOf1895() {
-        Throwable throwable = assertThrows(ValidateException.class, () ->  controller.createFilm(Film.builder()
+        Throwable throwable = assertThrows(ValidateException.class, () -> controller.createFilm(Film.builder()
                 .id(1)
                 .name("testName")
                 .description("test desc for film")
