@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -18,27 +19,32 @@ import java.util.Map;
 public class FilmController {
     private final Map<Integer, Film> films = new HashMap<>();
 
+    private Integer id = 0;
+
+    private int updateId() {
+
+        return ++id;
+    }
+
     @GetMapping
     public List<Film> getFilms() {
         return new ArrayList<>(films.values());
     }
 
-    @PostMapping("/film")
+    @PostMapping()
     public Film createFilm(@RequestBody Film film) {
         validateFilm(film);
 
-        if (films.get(film.getId()) != null) {
-            log.warn("Исключение ValidateException в POST запросе, Фильм уже сущствует в библиотеке");
-            throw new ValidateException("Фильм уже сущствует в библиотеке");
-        }
+        film.setId(updateId());
 
         films.put(film.getId(), film);
         log.info("Фильм с id = {} создан и добавлен в библиотеку", film.getId());
         return film;
     }
 
-    @PutMapping("/film")
+    @PutMapping()
     public Film updateFilm(@RequestBody Film film) {
+
         validateFilm(film);
 
         if (films.get(film.getId()) == null) {
@@ -53,18 +59,23 @@ public class FilmController {
 
     private void validateFilm(Film film) {
         if (film.getName().isBlank()) {
-            log.warn("Исключение ValidateException, название фильма пустое");
+            log.warn("ValidationException, Название пустое");
             throw new ValidateException("Название не может быть пустым");
         }
 
         if (film.getDescription().length() > 200) {
-            log.warn("Исключение ValidateException, описание фильма длиннее 200 символов");
+            log.warn("ValidationException, Слишком длинное описание");
             throw new ValidateException("Описание не может быть длиннее 200 символов");
         }
 
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, Month.DECEMBER, 28))) {
-            log.warn("Исключение ValidateException, некорректная дата выхода фильма");
+            log.warn("ValidationException, Некорректная дата выхода");
             throw new ValidateException("Фильм не мог выйти раньше 28 декабря 1895 года");
+        }
+
+        if (film.getDuration() <= 0) {
+            log.warn("ValidationException, отрицательная продолжительность фильма {}", film.getDuration());
+            throw new ValidateException("Продолжительность не может быть отрицательной");
         }
     }
 

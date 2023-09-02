@@ -17,31 +17,34 @@ import java.util.Map;
 public class UserController {
     private final Map<Integer, User> users = new HashMap<>();
 
+    private Integer id = 0;
+
+    private int updateId() {
+        return ++id;
+    }
+
     @GetMapping
     public List<User> getUsers() {
         return new ArrayList<>(users.values());
     }
 
-    @PostMapping("/user")
+    @PostMapping()
     public User createUser(@RequestBody User user) {
+
         validateUser(user);
 
-        if (users.get(user.getId()) != null) {
-            log.warn("Исключение ValidateException в POST запросе, Такой пользователь уже существует");
-            throw new ValidateException("Такой пользователь уже существует");
-        }
+        user.setId(updateId());
 
-        if (user.getName().isBlank() || user.getName() == null) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
 
-        user.setId(user.hashCode());
         users.put(user.getId(), user);
         log.info("Пользователь с id = {} создан и добавлен в систему", user.getId());
         return user;
     }
 
-    @PutMapping("/user")
+    @PutMapping()
     public User updateUser(@RequestBody User user) {
         validateUser(user);
 
@@ -61,27 +64,27 @@ public class UserController {
 
     private void validateUser(User user) {
         if (user.getEmail().isBlank()) {
-            log.warn("Исключение ValidateException, Почта пользователя пустая");
+            log.warn("ValidationException, Почта пустая");
             throw new ValidateException("Почта не может быть пустой");
         }
 
         if (!user.getEmail().contains("@")) {
-            log.warn("Исключение ValidateException, Почта не содержит @");
+            log.warn("ValidationException, Почта не содержит @");
             throw new ValidateException("Почта должна содержать знак @");
         }
 
         if (user.getLogin().isBlank()) {
-            log.warn("Исключение ValidateException, Логин пустой");
+            log.warn("ValidationException, Логин пустой");
             throw new ValidateException("Логин не может быть пустым");
         }
 
         if (user.getLogin().contains(" ")) {
-            log.warn("Исключение ValidateException, Логин содержит пробелы");
+            log.warn("ValidationException, Лгин содержит пробелы");
             throw new ValidateException("Логин не может содержать пробелы");
         }
 
         if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Исключение ValidateException, Некорректная дата рождения");
+            log.warn("ValidationException, Некорректная дата");
             throw new ValidateException("Некорректная дата рождения");
         }
     }

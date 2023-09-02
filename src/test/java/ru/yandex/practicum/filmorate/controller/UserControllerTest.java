@@ -169,28 +169,6 @@ class UserControllerTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfThisUserAlreadyExists() {
-        User user = controller.createUser(User.builder()
-                        .id(1)
-                        .name("testUser")
-                        .email("testEmail@ya.ru")
-                        .login("login")
-                        .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
-                        .build());
-
-        Throwable throwable = assertThrows(ValidateException.class, () ->  controller
-                .createUser(User.builder()
-                        .id(user.getId())
-                        .name("testUser")
-                        .email("testEmail@ya.ru")
-                        .login("login")
-                        .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
-                        .build()));
-
-        assertEquals("Такой пользователь уже существует", throwable.getMessage());
-    }
-
-    @Test
     public void shouldChangeNameToLoginIfNameIsEmpty() {
         User firstUser = controller.createUser(User.builder()
                 .id(1)
