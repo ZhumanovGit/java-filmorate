@@ -185,7 +185,7 @@ class UserControllerTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build());
 
-        assertEquals(firstUser.getName() , firstUser.getLogin());
+        assertEquals(firstUser.getName(), firstUser.getLogin());
         assertEquals(secondUser.getName(), secondUser.getLogin());
     }
 
