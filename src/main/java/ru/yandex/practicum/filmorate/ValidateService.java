@@ -12,6 +12,11 @@ import java.time.Month;
 public class ValidateService {
 
     public static void validateCreateFilm(Film film) {
+        if (film.getName() == null) {
+            log.warn("ValidationException, Название null");
+            throw new ValidateException("Фильм не имеет названия");
+        }
+
         if (film.getName().isBlank()) {
             log.warn("ValidationException, Название пустое");
             throw new ValidateException("Название не может быть пустым");
@@ -20,6 +25,11 @@ public class ValidateService {
         if (film.getDescription().length() > 200) {
             log.warn("ValidationException, Слишком длинное описание");
             throw new ValidateException("Описание не может быть длиннее 200 символов");
+        }
+
+        if (film.getReleaseDate() == null) {
+            log.warn("ValidationException, Нет даты выхода");
+            throw new ValidateException("Фильм не может не иметь даты выхода");
         }
 
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, Month.DECEMBER, 28))) {
@@ -42,6 +52,11 @@ public class ValidateService {
     }
 
     public static void validateCreateUser(User user) {
+        if (user.getEmail() == null) {
+            log.warn("ValidationException, Почта null");
+            throw new ValidateException("Пользователь не имеет почту");
+        }
+
         if (user.getEmail().isBlank()) {
             log.warn("ValidationException, Почта пустая");
             throw new ValidateException("Почта не может быть пустой");
@@ -52,13 +67,18 @@ public class ValidateService {
             throw new ValidateException("Почта должна содержать знак @");
         }
 
+        if (user.getLogin() == null) {
+            log.warn("ValidationException, Логин null");
+            throw new ValidateException("Пользователь не имеет логин");
+        }
+
         if (user.getLogin().isBlank()) {
             log.warn("ValidationException, Логин пустой");
             throw new ValidateException("Логин не может быть пустым");
         }
 
         if (user.getLogin().contains(" ")) {
-            log.warn("ValidationException, Лгин содержит пробелы");
+            log.warn("ValidationException, Логин содержит пробелы");
             throw new ValidateException("Логин не может содержать пробелы");
         }
 
