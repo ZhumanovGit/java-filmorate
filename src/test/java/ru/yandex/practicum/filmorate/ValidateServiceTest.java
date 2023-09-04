@@ -11,7 +11,6 @@ import java.time.Month;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ValidateServiceTest {
-    
     ValidateService service = new ValidateService();
 
     @Test
