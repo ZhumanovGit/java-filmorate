@@ -11,6 +11,7 @@ import java.time.Month;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ValidateServiceTest {
+    ValidateService service = new ValidateService();
 
     @Test
     public void shouldCorrectlyValidateFilmForCreate() {
@@ -21,7 +22,7 @@ class ValidateServiceTest {
                 .duration(120)
                 .build();
 
-        assertDoesNotThrow(() -> ValidateService.validateCreateFilm(film));
+        assertDoesNotThrow(() -> service.validateCreateFilm(film));
     }
 
     @Test
@@ -32,7 +33,7 @@ class ValidateServiceTest {
                 .duration(120)
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateFilm(film));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateFilm(film));
 
         assertEquals("Фильм не имеет названия", throwable.getMessage());
     }
@@ -46,7 +47,7 @@ class ValidateServiceTest {
                 .duration(120)
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateFilm(film));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateFilm(film));
 
         assertEquals("Название не может быть пустым", throwable.getMessage());
     }
@@ -65,7 +66,7 @@ class ValidateServiceTest {
                 .duration(120)
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateFilm(film));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateFilm(film));
 
         assertEquals("Описание не может быть длиннее 200 символов", throwable.getMessage());
     }
@@ -80,7 +81,7 @@ class ValidateServiceTest {
                 .duration(0)
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateFilm(film));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateFilm(film));
 
         assertEquals("Продолжительность не может быть отрицательной", throwable.getMessage());
 
@@ -95,7 +96,7 @@ class ValidateServiceTest {
                 .duration(120)
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateFilm(film));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateFilm(film));
 
         assertEquals("Фильм не может не иметь даты выхода", throwable.getMessage());
     }
@@ -110,7 +111,7 @@ class ValidateServiceTest {
                 .duration(120)
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateFilm(film));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateFilm(film));
 
         assertEquals("Фильм не мог выйти раньше 28 декабря 1895 года", throwable.getMessage());
     }
@@ -125,7 +126,7 @@ class ValidateServiceTest {
                 .duration(120)
                 .build();
 
-        assertDoesNotThrow(() -> ValidateService.validateUpdateFilm(film));
+        assertDoesNotThrow(() -> service.validateUpdateFilm(film));
     }
 
     @Test
@@ -137,7 +138,7 @@ class ValidateServiceTest {
                 .duration(120)
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateUpdateFilm(film));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateUpdateFilm(film));
         assertEquals("Не найден id для PUT запроса", throwable.getMessage());
     }
 
@@ -150,7 +151,7 @@ class ValidateServiceTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
 
-        assertDoesNotThrow(() -> ValidateService.validateCreateUser(user));
+        assertDoesNotThrow(() -> service.validateCreateUser(user));
     }
 
     @Test
@@ -161,7 +162,7 @@ class ValidateServiceTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateUser(user));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateUser(user));
 
         assertEquals("Пользователь не имеет почту", throwable.getMessage());
 
@@ -176,7 +177,7 @@ class ValidateServiceTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateUser(user));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateUser(user));
 
         assertEquals("Почта не может быть пустой", throwable.getMessage());
     }
@@ -190,7 +191,7 @@ class ValidateServiceTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateUser(user));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateUser(user));
 
         assertEquals("Почта должна содержать знак @", throwable.getMessage());
     }
@@ -203,7 +204,7 @@ class ValidateServiceTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateUser(user));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateUser(user));
 
         assertEquals("Пользователь не имеет логин", throwable.getMessage());
     }
@@ -217,7 +218,7 @@ class ValidateServiceTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateUser(user));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateUser(user));
 
         assertEquals("Логин не может быть пустым", throwable.getMessage());
     }
@@ -231,7 +232,7 @@ class ValidateServiceTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateUser(user));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateUser(user));
 
         assertEquals("Логин не может содержать пробелы", throwable.getMessage());
     }
@@ -245,7 +246,7 @@ class ValidateServiceTest {
                 .birthday(LocalDate.of(2025, Month.DECEMBER, 3))
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateCreateUser(user));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateCreateUser(user));
 
         assertEquals("Некорректная дата рождения", throwable.getMessage());
     }
@@ -260,7 +261,7 @@ class ValidateServiceTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
 
-        assertDoesNotThrow(() -> ValidateService.validateUpdateUser(user));
+        assertDoesNotThrow(() -> service.validateUpdateUser(user));
     }
 
     @Test
@@ -272,7 +273,7 @@ class ValidateServiceTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
 
-        Throwable throwable = assertThrows(ValidateException.class, () -> ValidateService.validateUpdateUser(user));
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateUpdateUser(user));
 
         assertEquals("Не найден id для PUT запроса", throwable.getMessage());
     }

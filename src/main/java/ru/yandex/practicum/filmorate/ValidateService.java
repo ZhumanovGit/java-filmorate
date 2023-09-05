@@ -11,7 +11,7 @@ import java.time.Month;
 @Slf4j
 public class ValidateService {
 
-    public static void validateCreateFilm(Film film) {
+    public void validateCreateFilm(Film film) {
         if (film.getName() == null) {
             log.warn("ValidationException, Название null");
             throw new ValidateException("Фильм не имеет названия");
@@ -43,7 +43,7 @@ public class ValidateService {
         }
     }
 
-    public static void validateUpdateFilm(Film film) {
+    public void validateUpdateFilm(Film film) {
         validateCreateFilm(film);
         if (film.getId() == null) {
             log.warn("ValidationException, не передан id фильма");
@@ -51,7 +51,7 @@ public class ValidateService {
         }
     }
 
-    public static void validateCreateUser(User user) {
+    public void validateCreateUser(User user) {
         if (user.getEmail() == null) {
             log.warn("ValidationException, Почта null");
             throw new ValidateException("Пользователь не имеет почту");
@@ -88,7 +88,7 @@ public class ValidateService {
         }
     }
 
-    public static void validateUpdateUser(User user) {
+    public void validateUpdateUser(User user) {
         validateCreateUser(user);
 
         if (user.getId() == null) {

@@ -14,6 +14,8 @@ import java.util.*;
 public class UserController {
     private final Map<Integer, User> users = new LinkedHashMap<>();
 
+    ValidateService validateService = new ValidateService();
+
     private int id = 0;
 
     private int createId() {
@@ -28,7 +30,7 @@ public class UserController {
     @PostMapping()
     public User createUser(@RequestBody User user) {
 
-        ValidateService.validateCreateUser(user);
+        validateService.validateCreateUser(user);
 
         user.setId(createId());
 
@@ -43,7 +45,7 @@ public class UserController {
 
     @PutMapping()
     public User updateUser(@RequestBody User user) {
-        ValidateService.validateUpdateUser(user);
+        validateService.validateUpdateUser(user);
 
         if (users.get(user.getId()) == null) {
             log.warn("Исключение NotFoundException в PUT запросе, Такого пользователя не существует");

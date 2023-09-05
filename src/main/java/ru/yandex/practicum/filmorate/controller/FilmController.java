@@ -15,6 +15,8 @@ import java.util.*;
 public class FilmController {
     private final Map<Integer, Film> films = new LinkedHashMap<>();
 
+    ValidateService validateService = new ValidateService();
+
     private int id = 0;
 
     private int createId() {
@@ -29,7 +31,7 @@ public class FilmController {
 
     @PostMapping()
     public Film createFilm(@RequestBody Film film) {
-        ValidateService.validateCreateFilm(film);
+        validateService.validateCreateFilm(film);
 
         film.setId(createId());
 
@@ -41,7 +43,7 @@ public class FilmController {
     @PutMapping()
     public Film updateFilm(@RequestBody Film film) {
 
-        ValidateService.validateUpdateFilm(film);
+        validateService.validateUpdateFilm(film);
 
         if (films.get(film.getId()) == null) {
             log.warn("Исключение NotFoundException в PUT запросе, Такого фильма еще не существует в библиотеке");
