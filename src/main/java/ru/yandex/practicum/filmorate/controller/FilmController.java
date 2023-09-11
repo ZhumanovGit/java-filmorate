@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.ValidateService;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 
 import java.util.*;
@@ -13,46 +13,60 @@ import java.util.*;
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private final Map<Integer, Film> films = new LinkedHashMap<>();
+    FilmService filmService;
 
-    ValidateService validateService = new ValidateService();
-
-    private int id = 0;
-
-    private int createId() {
-
-        return ++id;
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
     }
 
     @GetMapping
     public List<Film> getFilms() {
-        return new ArrayList<>(films.values());
+        return filmService.getAll();
+    }
+
+    @GetMapping("/{filmId}")
+    public Film getFilm(@PathVariable int filmId) {
+        return filmService.getFilmById(filmId);
     }
 
     @PostMapping()
     public Film createFilm(@RequestBody Film film) {
-        validateService.validateCreateFilm(film);
-
-        film.setId(createId());
-
-        films.put(film.getId(), film);
-        log.info("Фильм с id = {} создан и добавлен в библиотеку", film.getId());
-        return film;
+        Film newFilm = filmService.createFilm(film);
+        log.info("Фильм с id = {} создан и добавлен в библиотеку", newFilm);
+        return newFilm;
     }
 
     @PutMapping()
     public Film updateFilm(@RequestBody Film film) {
+        Film newFilm = filmService.updateFilm(film);
+        log.info("Фильм с id = {} обновлен", newFilm.getId());
+        return newFilm;
+    }
 
-        validateService.validateUpdateFilm(film);
+    @DeleteMapping
+    public void deleteAllFilms() {
+        filmService.deleteAll();
+    }
 
-        if (films.get(film.getId()) == null) {
-            log.warn("Исключение NotFoundException в PUT запросе, Такого фильма еще не существует в библиотеке");
-            throw new NotFoundException("Такого фильма еще не существует в библиотеке");
-        }
+    @DeleteMapping("/{filmId}")
+    public void deleteFilm(@PathVariable int filmId) {
+        filmService.deleteFilmById(filmId);
+    }
 
-        films.put(film.getId(), film);
-        log.info("Фильм с id = {} обновлен", film.getId());
-        return film;
+    @PutMapping("/{filmId}/like/{userId}")
+    public void likeFilm(@PathVariable int filmId, @PathVariable int userId) {
+        filmService.likeFilm(userId, filmId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void unlikeFilm(@PathVariable(value = "id") int filmId, @PathVariable int userId) {
+        filmService.unLikeFilm(userId, filmId);
+    }
+
+    @GetMapping("/popular")
+    public void getPopularFilms(@RequestParam(required = false) Integer count) {
+        filmService.getPopularFilms(count);
     }
 
 }
