@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service.film;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.WrongArgumentException;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class FilmService {
 
     FilmStorage filmStorage;
@@ -33,11 +35,15 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
-        return filmStorage.createFilm(film);
+        Film newFilm = filmStorage.createFilm(film);
+        log.info("Фильм с id = {} создан и добавлен в библиотеку", newFilm);
+        return newFilm;
     }
 
     public Film updateFilm(Film film) {
-        return filmStorage.updateFilm(film);
+        Film newFilm = filmStorage.updateFilm(film);
+        log.info("Фильм с id = {} обновлен", newFilm.getId());
+        return newFilm;
     }
 
     public void deleteAll() {

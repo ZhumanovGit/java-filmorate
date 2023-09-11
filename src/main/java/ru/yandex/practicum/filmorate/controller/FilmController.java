@@ -32,16 +32,12 @@ public class FilmController {
 
     @PostMapping()
     public Film createFilm(@RequestBody Film film) {
-        Film newFilm = filmService.createFilm(film);
-        log.info("Фильм с id = {} создан и добавлен в библиотеку", newFilm);
-        return newFilm;
+        return filmService.createFilm(film);
     }
 
     @PutMapping()
     public Film updateFilm(@RequestBody Film film) {
-        Film newFilm = filmService.updateFilm(film);
-        log.info("Фильм с id = {} обновлен", newFilm.getId());
-        return newFilm;
+        return filmService.updateFilm(film);
     }
 
     @DeleteMapping
