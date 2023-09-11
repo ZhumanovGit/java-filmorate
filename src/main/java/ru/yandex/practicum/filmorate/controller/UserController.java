@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.ValidateService;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.*;
 
@@ -12,52 +12,60 @@ import java.util.*;
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    private final Map<Integer, User> users = new LinkedHashMap<>();
+    UserService userService;
 
-    ValidateService validateService = new ValidateService();
-
-    private int id = 0;
-
-    private int createId() {
-        return ++id;
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping
     public List<User> getUsers() {
-        return new ArrayList<>(users.values());
+        return userService.getAll();
+    }
+
+    @GetMapping("/{userId}")
+    public User getUserById(@PathVariable int userId) {
+        return userService.getUserById(userId);
     }
 
     @PostMapping()
     public User createUser(@RequestBody User user) {
-
-        validateService.validateCreateUser(user);
-
-        user.setId(createId());
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-
-        users.put(user.getId(), user);
-        log.info("Пользователь с id = {} создан и добавлен в систему", user.getId());
-        return user;
+        return userService.createUser(user);
     }
 
     @PutMapping()
     public User updateUser(@RequestBody User user) {
-        validateService.validateUpdateUser(user);
+        return userService.updateUser(user);
+    }
 
-        if (users.get(user.getId()) == null) {
-            log.warn("Исключение NotFoundException в PUT запросе, Такого пользователя не существует");
-            throw new NotFoundException("Такого пользователя не существует");
-        }
+    @DeleteMapping()
+    public void deleteAll() {
+        userService.deleteAll();
+    }
 
-        if (user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
+    @DeleteMapping("/{userId}")
+    public void deleteUserById(@PathVariable int userId) {
+        userService.deleteUserById(userId);
+    }
 
-        users.put(user.getId(), user);
-        log.info("Пользователь с id = {} обновлен", user.getId());
-        return user;
+    @PutMapping("/{userId}/friends/{friendId}")
+    public void makeFriend(@PathVariable int userId, @PathVariable int friendId) {
+        userService.addFriend(userId, friendId);
+    }
+
+    @DeleteMapping("/{userId}/friends/{friendId}")
+    public void deleteFriend(@PathVariable int userId, @PathVariable int friendId) {
+        userService.deleteFriend(userId, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<Long> getFriends(@PathVariable int id) {
+        return userService.getUserFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<Long> getMutualFriends(@PathVariable int id, @PathVariable int otherId) {
+        return userService.getMutualFriends(id, otherId);
     }
 }
