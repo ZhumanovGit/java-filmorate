@@ -7,12 +7,14 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
     final Map<Integer, User> users;
     int id;
+    Map<Integer, Set<Integer>> friends;
     ValidateService validateService;
 
     @Autowired
@@ -20,6 +22,7 @@ public class InMemoryUserStorage implements UserStorage {
         this.validateService = validateService;
         this.users = new LinkedHashMap<>();
         this.id = 0;
+        this.friends = new HashMap<>();
     }
 
     int createId() {
@@ -27,19 +30,16 @@ public class InMemoryUserStorage implements UserStorage {
     }
     @Override
     public User createUser(User user) {
-        validateService.validateCreateUser(user);
+        validateService.validateCreateUser(user);;
 
         user.setId(createId());
-
-        if (user.getFriends() == null) {
-            user.setFriends(new HashSet<>());
-        }
 
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
 
         users.put(user.getId(), user);
+        friends.put(user.getId(), new HashSet<>());
         return user;
     }
 
@@ -51,15 +51,15 @@ public class InMemoryUserStorage implements UserStorage {
             throw new NotFoundException("Такого пользователя не существует");
         }
 
-        if (user.getFriends() == null) {
-            user.setFriends(new HashSet<>());
-        }
-
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
 
         users.put(user.getId(), user);
+
+        if (friends.get(user.getId()) == null) {
+            friends.put(user.getId(), new HashSet<>());
+        }
         return user;
     }
 
@@ -89,4 +89,31 @@ public class InMemoryUserStorage implements UserStorage {
 
         return user;
     }
+
+    @Override
+    public void addFriend(int id, int friendId) {
+        Set<Integer> newUserFriends = friends.get(id);
+        newUserFriends.add(friendId);
+        friends.put(id, newUserFriends);
+    }
+
+    @Override
+    public void deleteFriend(int id, int friendId) {
+        Set<Integer> newUserFriends = friends.get(id);
+        newUserFriends.remove(friendId);
+        friends.put(id, newUserFriends);
+    }
+
+    @Override
+    public List<User> getUserFriends(int id) {
+        Set<Integer> userFriendsIds = friends.get(id);
+        if (userFriendsIds == null) {
+            return new ArrayList<>();
+        }
+
+        return userFriendsIds.stream()
+                .map(friendId -> getUserById(friendId))
+                .collect(Collectors.toList());
+    }
+
 }

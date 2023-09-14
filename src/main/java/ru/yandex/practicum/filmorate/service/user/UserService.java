@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,28 +51,21 @@ public class UserService {
         User firstUser = getUserById(id);
         User secondUser = getUserById(friendId);
 
-        firstUser.getFriends().add((long) friendId);
-        secondUser.getFriends().add((long) id);
+        storage.addFriend(firstUser.getId(), secondUser.getId());
+        storage.addFriend(secondUser.getId(), firstUser.getId());
     }
 
     public void deleteFriend(int id, int friendId) {
         User firstUser = getUserById(id);
         User secondUser = getUserById(friendId);
 
-        firstUser.getFriends().remove((long) friendId);
-        secondUser.getFriends().remove((long) id);
+        storage.deleteFriend(firstUser.getId(), secondUser.getId());
+        storage.deleteFriend(secondUser.getId(), firstUser.getId());
+
     }
 
     public List<User> getUserFriends(int id) {
-        Set<Long> friends= getUserById(id).getFriends();
-
-        if (friends == null) {
-            return new ArrayList<>();
-        }
-
-        return friends.stream()
-                .map(friendId -> getUserById(friendId.intValue()))
-                .collect(Collectors.toList());
+        return storage.getUserFriends(id);
     }
 
     public List<User> getMutualFriends(int id, int friendId) {
