@@ -36,6 +36,7 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+        log.info("Пользователь с id = {} обновлен", user.getId());
         return storage.updateUser(user);
     }
 
@@ -49,17 +50,10 @@ public class UserService {
 
     public void addFriend(int id, int friendId) {
         User firstUser = getUserById(id);
-        System.out.println(firstUser);
         User secondUser = getUserById(friendId);
-        System.out.println(secondUser);
 
         firstUser.getFriends().add((long) friendId);
-        System.out.println("im working");
         secondUser.getFriends().add((long) id);
-        System.out.println("im working");
-
-        System.out.println("im done");
-
     }
 
     public void deleteFriend(int id, int friendId) {
@@ -70,21 +64,28 @@ public class UserService {
         secondUser.getFriends().remove((long) id);
     }
 
-    public List<Long> getUserFriends(int id) {
-        User user = getUserById(id);
-        return new ArrayList<>(user.getFriends());
+    public List<User> getUserFriends(int id) {
+        Set<Long> friends= getUserById(id).getFriends();
+
+        if (friends == null) {
+            return new ArrayList<>();
+        }
+
+        return friends.stream()
+                .map(friendId -> getUserById(friendId.intValue()))
+                .collect(Collectors.toList());
     }
 
-    public List<Long> getMutualFriends(int id, int friendId) {
-        Set<Long> firstSet = getUserById(id).getFriends();
-        Set<Long> secondSet = getUserById(friendId).getFriends();
+    public List<User> getMutualFriends(int id, int friendId) {
+        List<User> firstList = getUserFriends(id);
+        List<User> secondList = getUserFriends(friendId);
 
-        List<Long> result = firstSet.stream()
-                .filter(secondSet::contains)
+        if (firstList.isEmpty() || secondList.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return firstList.stream()
+                .filter(secondList::contains)
                 .collect(Collectors.toList());
-
-        log.info("количство общих друзей {}", result.size());
-
-        return result;
     }
 }

@@ -31,7 +31,9 @@ public class InMemoryUserStorage implements UserStorage {
 
         user.setId(createId());
 
-        user.setFriends(new HashSet<>());
+        if (user.getFriends() == null) {
+            user.setFriends(new HashSet<>());
+        }
 
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
@@ -47,6 +49,10 @@ public class InMemoryUserStorage implements UserStorage {
 
         if (users.get(user.getId()) == null) {
             throw new NotFoundException("Такого пользователя не существует");
+        }
+
+        if (user.getFriends() == null) {
+            user.setFriends(new HashSet<>());
         }
 
         if (user.getName().isBlank()) {

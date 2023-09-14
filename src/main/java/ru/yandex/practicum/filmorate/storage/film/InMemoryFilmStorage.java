@@ -6,10 +6,7 @@ import ru.yandex.practicum.filmorate.service.ValidateService;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage{
@@ -35,6 +32,10 @@ public class InMemoryFilmStorage implements FilmStorage{
 
         film.setId(createId());
 
+        if (film.getLikedUsers() == null) {
+            film.setLikedUsers(new HashSet<>());
+        }
+
         films.put(film.getId(), film);
         return film;
     }
@@ -45,6 +46,10 @@ public class InMemoryFilmStorage implements FilmStorage{
 
         if (films.get(film.getId()) == null) {
             throw new NotFoundException("Такого фильма еще не существует в библиотеке");
+        }
+
+        if (film.getLikedUsers() == null) {
+            film.setLikedUsers(new HashSet<>());
         }
 
         films.put(film.getId(), film);

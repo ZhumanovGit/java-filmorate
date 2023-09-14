@@ -21,60 +21,61 @@ public class UserController {
 
     @GetMapping
     public List<User> getUsers() {
-        log.info("Получены все пользователи");
+        log.info("Обработка зпроса с получением всех пользователей");
         return userService.getAll();
     }
 
     @GetMapping("/{userId}")
     public User getUserById(@PathVariable int userId) {
-        log.info("Получен пользователь с id = {}", userId);
+        log.info("Обработка запроса с получением пользователя с id = {}", userId);
         return userService.getUserById(userId);
     }
 
     @PostMapping()
     public User createUser(@RequestBody User user) {
+        log.info("Обработка запроса с созданием нового пользователя");
         return userService.createUser(user);
     }
 
     @PutMapping()
     public User updateUser(@RequestBody User user) {
-        log.info("Пользователь с id = {} обновлен", user.getId());
+        log.info("Обработка запроса с обновлением пользователя с id = {}", user.getId());
         return userService.updateUser(user);
     }
 
     @DeleteMapping()
     public void deleteAll() {
-        log.info("Все пользователи удалены из системы");
+        log.info("Обработка запроса с удалением всех пользователей из системы");
         userService.deleteAll();
     }
 
     @DeleteMapping("/{userId}")
     public void deleteUserById(@PathVariable int userId) {
-        log.info("Пользователь с id = {}", userId);
+        log.info("Обработка запроса с удалением пользователя с id = {}", userId);
         userService.deleteUserById(userId);
     }
 
     @PutMapping("/{userId}/friends/{friendId}")
     public void makeFriend(@PathVariable int userId, @PathVariable int friendId) {
-        log.info("Пользователи с id = {} и friendId = {} теперь друзья", userId, friendId);
+        log.info("Обработка запроса на добавление в друзья пользователей с id = {} и friendId = {}", userId, friendId);
         userService.addFriend(userId, friendId);
     }
 
     @DeleteMapping("/{userId}/friends/{friendId}")
     public void deleteFriend(@PathVariable int userId, @PathVariable int friendId) {
-        log.info("Пользователи с id = {} и friendId = {} больше не друзья", userId, friendId);
+        log.info("Обработка запроса на удаление из друзей пользователей с id = {} и friendId = {}", userId, friendId);
         userService.deleteFriend(userId, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public List<Long> getFriends(@PathVariable int id) {
-        log.info("Получены друзья пользователя с id = {}", id);
+    public List<User> getFriends(@PathVariable int id) {
+        log.info("Обработка запроса на получение друзей пользователя с id = {}", id);
         return userService.getUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<Long> getMutualFriends(@PathVariable int id, @PathVariable int otherId) {
-        log.info("Получены общие друзья пользователей с id = {} и id = {}", id, otherId);
+    public List<User> getMutualFriends(@PathVariable int id, @PathVariable int otherId) {
+        log.info("Обработка запроса на получение общих друзей пользователей с id = {} и otherId = {}", id, otherId);
         return userService.getMutualFriends(id, otherId);
     }
 }
