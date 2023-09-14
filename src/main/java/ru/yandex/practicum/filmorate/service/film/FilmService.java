@@ -3,14 +3,11 @@ package ru.yandex.practicum.filmorate.service.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.WrongArgumentException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -59,7 +56,7 @@ public class FilmService {
 
         userStorage.getUserById(userId);
 
-        film.getLikedUsers().add((long) userId);
+        filmStorage.addLike(film.getId(), userId);
     }
 
     public void unLikeFilm(int userId, int filmId) {
@@ -67,19 +64,10 @@ public class FilmService {
 
         userStorage.getUserById(userId);
 
-        film.getLikedUsers().remove((long) userId);
+        filmStorage.deleteLike(film.getId(), userId);
     }
 
     public List<Film> getPopularFilms(Integer count) {
-        if (count == null) {
-            count = 10;
-        }
-        if (count <= 0) {
-            throw new WrongArgumentException("Недопустимое значение count");
-        }
-        return getAll().stream()
-                .sorted(Comparator.comparing(Film::getLikesCount).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getPopularFilms(count);
     }
 }

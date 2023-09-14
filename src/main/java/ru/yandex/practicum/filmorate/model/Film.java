@@ -14,9 +14,4 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private int duration;
-    private Set<Long> likedUsers;
-
-    public int getLikesCount() {
-        return likedUsers.size();
-    }
 }
