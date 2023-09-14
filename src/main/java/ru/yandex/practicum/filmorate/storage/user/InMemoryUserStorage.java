@@ -6,10 +6,7 @@ import ru.yandex.practicum.filmorate.service.ValidateService;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -33,6 +30,8 @@ public class InMemoryUserStorage implements UserStorage {
         validateService.validateCreateUser(user);
 
         user.setId(createId());
+
+        user.setFriends(new HashSet<>());
 
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());

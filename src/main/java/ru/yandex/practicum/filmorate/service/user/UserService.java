@@ -36,9 +36,7 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        User newUser = storage.updateUser(user);
-        log.info("Пользователь с id = {} обновлен", newUser.getId());
-        return newUser;
+        return storage.updateUser(user);
     }
 
     public void deleteAll() {
@@ -51,10 +49,17 @@ public class UserService {
 
     public void addFriend(int id, int friendId) {
         User firstUser = getUserById(id);
+        System.out.println(firstUser);
         User secondUser = getUserById(friendId);
+        System.out.println(secondUser);
 
         firstUser.getFriends().add((long) friendId);
+        System.out.println("im working");
         secondUser.getFriends().add((long) id);
+        System.out.println("im working");
+
+        System.out.println("im done");
+
     }
 
     public void deleteFriend(int id, int friendId) {
@@ -74,8 +79,12 @@ public class UserService {
         Set<Long> firstSet = getUserById(id).getFriends();
         Set<Long> secondSet = getUserById(friendId).getFriends();
 
-        return firstSet.stream()
+        List<Long> result = firstSet.stream()
                 .filter(secondSet::contains)
                 .collect(Collectors.toList());
+
+        log.info("количство общих друзей {}", result.size());
+
+        return result;
     }
 }
