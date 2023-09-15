@@ -92,9 +92,16 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(int id, int friendId) {
+        getUserById(id);
+        getUserById(friendId);
+
         Set<Integer> newUserFriends = friends.get(id);
         newUserFriends.add(friendId);
         friends.put(id, newUserFriends);
+
+        Set<Integer> secondUserFriends = friends.get(friendId);
+        secondUserFriends.add(id);
+        friends.put(friendId, secondUserFriends);
     }
 
     @Override
@@ -102,17 +109,23 @@ public class InMemoryUserStorage implements UserStorage {
         Set<Integer> newUserFriends = friends.get(id);
         newUserFriends.remove(friendId);
         friends.put(id, newUserFriends);
+
+        Set<Integer> secondUserFriends = friends.get(friendId);
+        secondUserFriends.remove(id);
+        friends.put(friendId, secondUserFriends);
     }
 
     @Override
     public List<User> getUserFriends(int id) {
+        getUserById(id);
+
         Set<Integer> userFriendsIds = friends.get(id);
         if (userFriendsIds == null) {
             return new ArrayList<>();
         }
 
         return userFriendsIds.stream()
-                .map(friendId -> getUserById(friendId))
+                .map(this::getUserById)
                 .collect(Collectors.toList());
     }
 
