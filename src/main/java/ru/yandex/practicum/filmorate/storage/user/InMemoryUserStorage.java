@@ -28,9 +28,10 @@ public class InMemoryUserStorage implements UserStorage {
     int createId() {
         return ++id;
     }
+
     @Override
     public User createUser(User user) {
-        validateService.validateCreateUser(user);;
+        validateService.validateCreateUser(user);
 
         user.setId(createId());
 

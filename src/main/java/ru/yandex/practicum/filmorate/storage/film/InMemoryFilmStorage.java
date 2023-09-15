@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class InMemoryFilmStorage implements FilmStorage{
+public class InMemoryFilmStorage implements FilmStorage {
 
     final Map<Integer, Film> films;
     int id;
@@ -35,6 +35,7 @@ public class InMemoryFilmStorage implements FilmStorage{
 
         return ++id;
     }
+
     @Override
     public Film createFilm(Film film) {
         validateService.validateCreateFilm(film);
