@@ -3,24 +3,29 @@ package ru.yandex.practicum.filmorate.service.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.ValidateService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
 public class FilmService {
 
     FilmStorage filmStorage;
-
     UserStorage userStorage;
+    ValidateService validateService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage, ValidateService validateService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.validateService = validateService;
     }
 
     public List<Film> getAll() {
@@ -28,19 +33,25 @@ public class FilmService {
     }
 
     public Film getFilmById(int id) {
-        return filmStorage.getFilmById(id);
+        Optional<Film> mayBeFilm = filmStorage.getFilmById(id);
+        if (mayBeFilm.isEmpty()) {
+            throw new NotFoundException("Такого фильма еще не существует в библиотеке");
+        }
+        return mayBeFilm.get();
     }
 
     public Film createFilm(Film film) {
-        Film newFilm = filmStorage.createFilm(film);
-        log.info("Фильм с id = {} создан и добавлен в библиотеку", newFilm);
-        return newFilm;
+        validateService.validateCreateFilm(film);
+        return filmStorage.createFilm(film);
     }
 
-    public Film updateFilm(Film film) {
-        Film newFilm = filmStorage.updateFilm(film);
-        log.info("Фильм с id = {} обновлен", newFilm.getId());
-        return newFilm;
+    public void updateFilm(Film film) {
+        validateService.validateUpdateFilm(film);
+        int filmId = film.getId();
+        Film oldFilm = getFilmById(filmId);
+        film.setLikesCount(oldFilm.getLikesCount());
+
+        filmStorage.updateFilm(film);
     }
 
     public void deleteAll() {
@@ -53,18 +64,28 @@ public class FilmService {
 
     public void likeFilm(int userId, int filmId) {
         Film film = getFilmById(filmId);
+        Optional<User> mayBeUser = userStorage.getUserById(userId);
 
-        userStorage.getUserById(userId);
+        if (mayBeUser.isEmpty()) {
+            throw new NotFoundException("Такого пользователя не существует");
+        }
+        int newLikesCount = film.getLikesCount() + 1;
+        film.setLikesCount(newLikesCount);
 
-        filmStorage.addLike(film.getId(), userId);
+        filmStorage.addLike(film, mayBeUser.get());
     }
 
     public void unLikeFilm(int userId, int filmId) {
         Film film = getFilmById(filmId);
+        Optional<User> mayBeUser = userStorage.getUserById(userId);
 
-        userStorage.getUserById(userId);
+        if (mayBeUser.isEmpty()) {
+            throw new NotFoundException("Такого пользователя не существует");
+        }
+        int newLikesCount = film.getLikesCount() - 1;
+        film.setLikesCount(newLikesCount);
 
-        filmStorage.deleteLike(film.getId(), userId);
+        filmStorage.deleteLike(film, mayBeUser.get());
     }
 
     public List<Film> getPopularFilms(Integer count) {

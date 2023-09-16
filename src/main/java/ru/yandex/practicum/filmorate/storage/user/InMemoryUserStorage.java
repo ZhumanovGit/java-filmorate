@@ -3,11 +3,9 @@ package ru.yandex.practicum.filmorate.storage.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.service.ValidateService;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -31,8 +29,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User createUser(User user) {
-        validateService.validateCreateUser(user);
-
         user.setId(createId());
 
         if (user.getName() == null || user.getName().isBlank()) {
@@ -46,12 +42,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        validateService.validateUpdateUser(user);
-
-        if (users.get(user.getId()) == null) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
-
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -66,14 +56,18 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void deleteUser(int id) {
-        if (users.remove(id) == null) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
+       users.remove(id);
+       friends.remove(id);
+       for (Integer userId: friends.keySet()) {
+           Set<Integer> userFriends = friends.get(userId);
+           userFriends.remove(id);
+       }
     }
 
     @Override
     public void deleteAllUsers() {
         users.clear();
+        friends.clear();
     }
 
     @Override
@@ -82,52 +76,41 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User getUserById(int id) {
-        User user = users.get(id);
-        if (user == null) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
-
-        return user;
+    public Optional<User> getUserById(int id) {
+        return Optional.ofNullable(users.get(id));
     }
 
     @Override
-    public void addFriend(int id, int friendId) {
-        getUserById(id);
-        getUserById(friendId);
+    public void addFriend(User user, User friend) {
+        int userId = user.getId();
+        int friendId = friend.getId();
 
-        Set<Integer> newUserFriends = friends.get(id);
+        Set<Integer> newUserFriends = friends.get(userId);
         newUserFriends.add(friendId);
-        friends.put(id, newUserFriends);
+        friends.put(userId, newUserFriends);
 
         Set<Integer> secondUserFriends = friends.get(friendId);
-        secondUserFriends.add(id);
+        secondUserFriends.add(userId);
         friends.put(friendId, secondUserFriends);
     }
 
     @Override
-    public void deleteFriend(int id, int friendId) {
-        Set<Integer> newUserFriends = friends.get(id);
+    public void deleteFriend(User user, User friend) {
+        int userId = user.getId();
+        int friendId = friend.getId();
+
+        Set<Integer> newUserFriends = friends.get(userId);
         newUserFriends.remove(friendId);
-        friends.put(id, newUserFriends);
+        friends.put(userId, newUserFriends);
 
         Set<Integer> secondUserFriends = friends.get(friendId);
-        secondUserFriends.remove(id);
+        secondUserFriends.remove(userId);
         friends.put(friendId, secondUserFriends);
     }
 
     @Override
-    public List<User> getUserFriends(int id) {
-        getUserById(id);
-
-        Set<Integer> userFriendsIds = friends.get(id);
-        if (userFriendsIds == null) {
-            return new ArrayList<>();
-        }
-
-        return userFriendsIds.stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+    public List<Integer> getUserFriends(int id) {
+        return new ArrayList<>(friends.get(id));
     }
 
 }

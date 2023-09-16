@@ -30,8 +30,8 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ExceptionResponse handleOtherExceptions(final RuntimeException e) {
-        log.warn("Внутреннее исключение {}", e.getMessage());
-        return new ExceptionResponse(e.getMessage());
+        log.warn("Внутреннее исключение {}. StackTrace: {}", e.getMessage(), e.getStackTrace());
+        return new ExceptionResponse(e.getMessage(), e.getStackTrace());
     }
 
 }
