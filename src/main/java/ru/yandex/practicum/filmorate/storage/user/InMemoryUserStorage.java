@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.service.ValidateService;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -13,11 +12,9 @@ public class InMemoryUserStorage implements UserStorage {
     final Map<Integer, User> users;
     int id;
     Map<Integer, Set<Integer>> friends;
-    ValidateService validateService;
 
     @Autowired
-    public InMemoryUserStorage(ValidateService validateService) {
-        this.validateService = validateService;
+    public InMemoryUserStorage() {
         this.users = new LinkedHashMap<>();
         this.id = 0;
         this.friends = new HashMap<>();

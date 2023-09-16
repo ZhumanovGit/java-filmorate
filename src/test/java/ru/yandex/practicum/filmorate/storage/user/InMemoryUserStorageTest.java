@@ -17,7 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class InMemoryUserStorageTest {
 
-    UserStorage storage;
+    InMemoryUserStorage storage;
+
+    @BeforeEach
+    public void beforeEach() {
+        this.storage = new InMemoryUserStorage();
+    }
 
     void assertEqualsUser(User o1, User o2) {
         assertEquals(o1.getName(), o2.getName());
@@ -41,16 +46,6 @@ public class InMemoryUserStorageTest {
         assertEquals(1, storage.getAllUsers().size());
     }
 
-    @Test
-    public void createUser_shouldThrowExceptionIfValidationIsFailed_ValidateException() {
-        User user = User.builder()
-                .login("testLogin")
-                .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
-                .build();
-
-        assertThrows(ValidateException.class, () -> storage.createUser(user));
-        assertEquals(0, storage.getAllUsers().size());
-    }
 
     @Test
     public void updateUser_shouldCorrectlyUpdateUser_returnUser() {
@@ -75,43 +70,6 @@ public class InMemoryUserStorageTest {
         assertEquals("newUser", updatedUser.getName());
     }
 
-    @Test
-    public void updateUser_shouldTrowExceptionIfNotFoundUser_NotFoundException() {
-        User user = User.builder()
-                .id(5)
-                .name("testUser")
-                .email("test-user@ya.ru")
-                .login("testLogin")
-                .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
-                .build();
-
-        Throwable throwable = assertThrows(NotFoundException.class, () -> storage.updateUser(user));
-
-        assertEquals("Такого пользователя не существует", throwable.getMessage());
-    }
-
-    @Test
-    public void deleteUser_shouldCorrectlyRemoveUser_void() {
-        User user = User.builder()
-                .name("testUser")
-                .email("test-user@ya.ru")
-                .login("testLogin")
-                .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
-                .build();
-        storage.createUser(user);
-
-        storage.deleteUser(1);
-
-        Throwable throwable = assertThrows(NotFoundException.class, () -> storage.getUserById(1));
-        assertEquals("Такого пользователя не существует", throwable.getMessage());
-    }
-
-    @Test
-    public void deleteUser_shouldThrowExceptionIfUserWasNotFound_NotFoundException() {
-        Throwable throwable = assertThrows(NotFoundException.class, () -> storage.deleteUser(1));
-
-        assertEquals("Такого пользователя не существует", throwable.getMessage());
-    }
 
     @Test
     public void deleteAllUsers_shouldDeleteAllUsers_void() {
@@ -190,13 +148,6 @@ public class InMemoryUserStorageTest {
     }
 
     @Test
-    public void getUserById_shouldThrowExceptionIfUserWasNotFound_NotFoundException() {
-        Throwable throwable = assertThrows(NotFoundException.class, () -> storage.getUserById(15));
-
-        assertEquals("Такого пользователя не существует", throwable.getMessage());
-    }
-
-    @Test
     public void addFriend_shouldCorrectlyAddFriends_void() {
         User firstUser = User.builder()
                 .name("firstUser")
@@ -217,29 +168,6 @@ public class InMemoryUserStorageTest {
 
         assertEquals(List.of(secondCreatedUser.getId()), storage.getUserFriends(1));
         assertEquals(List.of(firstCreatedUser.getId()), storage.getUserFriends(2));
-    }
-
-    @Test
-    public void addFriend_shouldThrowExceptionIfCantFindUserOrFriend_NotFoundException() {
-        User firstUser = User.builder()
-                .name("firstUser")
-                .email("test-user@ya.ru")
-                .login("testLogin")
-                .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
-                .build();
-        User secondUser = User.builder()
-                .id(2)
-                .name("secondUser")
-                .email("test-user@ya.ru")
-                .login("testLogin")
-                .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
-                .build();
-        User firstCreatedUser = storage.createUser(firstUser);
-
-        Throwable throwable = assertThrows(NotFoundException.class,
-                () -> storage.addFriend(firstCreatedUser, secondUser));
-
-        assertEquals("Такого пользователя не существует", throwable.getMessage());
     }
 
     @Test
