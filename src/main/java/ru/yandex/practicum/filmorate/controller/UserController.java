@@ -45,11 +45,12 @@ public class UserController {
     }
 
     @PutMapping()
-    public void updateUser(@RequestBody User user) {
+    public User updateUser(@RequestBody User user) {
         int userId = user.getId();
         log.info("Обработка запроса с обновлением пользователя с id = {}", user.getId());
         userService.updateUser(user);
         log.info("Обновлен пользователь с id = {}", userId);
+        return userService.getUserById(userId);
     }
 
     @DeleteMapping()

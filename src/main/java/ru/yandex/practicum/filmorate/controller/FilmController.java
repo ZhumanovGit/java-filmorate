@@ -47,11 +47,12 @@ public class FilmController {
     }
 
     @PutMapping()
-    public void updateFilm(@RequestBody Film film) {
+    public Film updateFilm(@RequestBody Film film) {
         int filmId = film.getId();
         log.info("Обработка запроса с обновлением фильма с id = {}", filmId);
         filmService.updateFilm(film);
         log.info("Обновлен фильм с id = {}", filmId);
+        return filmService.getFilmById(filmId);
     }
 
     @DeleteMapping
