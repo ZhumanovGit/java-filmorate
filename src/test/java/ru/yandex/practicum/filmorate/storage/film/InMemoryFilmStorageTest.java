@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -23,6 +20,7 @@ class InMemoryFilmStorageTest {
     }
 
     void assertEqualsFilm(Film o1, Film o2) {
+        assertEquals(o1.getId(), o2.getId());
         assertEquals(o1.getName(), o2.getName());
         assertEquals(o1.getDuration(), o2.getDuration());
         assertEquals(o1.getDescription(), o2.getDescription());
@@ -32,16 +30,22 @@ class InMemoryFilmStorageTest {
     @Test
     public void createFilm_shouldCorrectlyCreateFilm_returnFilm() {
         Film film = Film.builder()
+                .id(1)
                 .name("testFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
                 .build();
+        Map<Integer, Film> expectedFilmsMap = new LinkedHashMap<>();
+        expectedFilmsMap.put(1, film);
+        Map<Integer, Set<Integer>> expectedLikesMap = new LinkedHashMap<>();
+        expectedLikesMap.put(1, new HashSet<>());
 
         Film newFilm = storage.createFilm(film);
 
-        assertEquals(1, newFilm.getId());
         assertEqualsFilm(film, newFilm);
+        assertEquals(expectedFilmsMap, storage.films);
+        assertEquals(expectedLikesMap, storage.likes);
     }
 
     @Test
@@ -60,11 +64,14 @@ class InMemoryFilmStorageTest {
                 .duration(120)
                 .build();
         storage.createFilm(film);
+        Map<Integer, Film> expectedFilmsMap = new LinkedHashMap<>();
+        expectedFilmsMap.put(1, newFilm);
 
         storage.updateFilm(newFilm);
 
         assertEquals(1, newFilm.getId());
         assertEquals("updatedFilm", newFilm.getName());
+        assertEquals(expectedFilmsMap, storage.films);
     }
 
     @Test
@@ -94,6 +101,7 @@ class InMemoryFilmStorageTest {
         storage.deleteAllFilms();
 
         assertEquals(0, storage.getFilms().size());
+        assertEquals(0, storage.getLikes().size());
     }
 
     @Test
@@ -119,6 +127,11 @@ class InMemoryFilmStorageTest {
         storage.createFilm(firstFilm);
         storage.createFilm(secondFilm);
         storage.createFilm(thirdFilm);
+        List<Film> expectedFilmsList = new ArrayList<>();
+        expectedFilmsList.add(firstFilm);
+        expectedFilmsList.add(secondFilm);
+        expectedFilmsList.add(thirdFilm);
+
 
         List<Film> films = storage.getFilms();
 
@@ -126,11 +139,13 @@ class InMemoryFilmStorageTest {
         assertEqualsFilm(films.get(0), firstFilm);
         assertEqualsFilm(films.get(1), secondFilm);
         assertEqualsFilm(films.get(2), thirdFilm);
+        assertEquals(expectedFilmsList, storage.getFilms());
     }
 
     @Test
     public void getFilmById_shouldCorrectlyFindFilm_returnFilm() {
         Film firstFilm = Film.builder()
+                .id(1)
                 .name("firstFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
@@ -141,6 +156,14 @@ class InMemoryFilmStorageTest {
         Optional<Film> ourFilm = storage.getFilmById(createdFilm.getId());
 
         assertEqualsFilm(createdFilm, ourFilm.get());
+    }
+
+    @Test
+    public void getFilmById_whenFilmIsNull_returnEmptyOptional() {
+
+        Optional<Film> ourFilm = storage.getFilmById(5);
+
+        assertEquals(true, ourFilm.isEmpty());
     }
 
     @Test

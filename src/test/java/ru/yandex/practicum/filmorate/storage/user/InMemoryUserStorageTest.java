@@ -4,13 +4,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,6 +24,7 @@ public class InMemoryUserStorageTest {
     }
 
     void assertEqualsUser(User o1, User o2) {
+        assertEquals(o1.getId(), o2.getId());
         assertEquals(o1.getName(), o2.getName());
         assertEquals(o1.getLogin(), o2.getLogin());
         assertEquals(o1.getEmail(), o2.getEmail());
@@ -34,16 +34,23 @@ public class InMemoryUserStorageTest {
     @Test
     public void createUser_shouldCorrectlyCreateUser_returnUser() {
         User user = User.builder()
+                .id(1)
                 .name("testUser")
                 .email("test-user@ya.ru")
                 .login("testLogin")
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
+        Map<Integer, User> expectedUserMap = new LinkedHashMap<>();
+        expectedUserMap.put(1, user);
+        Map<Integer, Set<Integer>> expectedFriendsMap = new LinkedHashMap<>();
+        expectedFriendsMap.put(1, new HashSet<>());
 
         User createdUser = storage.createUser(user);
 
         assertEqualsUser(user, createdUser);
         assertEquals(1, storage.getAllUsers().size());
+        assertEquals(expectedUserMap, storage.users);
+        assertEquals(expectedFriendsMap, storage.friends);
     }
 
 
@@ -63,11 +70,14 @@ public class InMemoryUserStorageTest {
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
         storage.createUser(user);
+        Map<Integer, User> expectedUserMap = new LinkedHashMap<>();
+        expectedUserMap.put(1, newUser);
 
         User updatedUser = storage.updateUser(newUser);
 
         assertEquals(1, updatedUser.getId());
         assertEquals("newUser", updatedUser.getName());
+        assertEquals(expectedUserMap, storage.users);
     }
 
 
@@ -98,6 +108,7 @@ public class InMemoryUserStorageTest {
         storage.deleteAllUsers();
 
         assertEquals(0, storage.getAllUsers().size());
+        assertEquals(0, storage.friends.size());
     }
 
     @Test
@@ -123,6 +134,10 @@ public class InMemoryUserStorageTest {
         storage.createUser(firstUser);
         storage.createUser(secondUser);
         storage.createUser(thirdUser);
+        List<User> expectedUserList = new ArrayList<>();
+        expectedUserList.add(firstUser);
+        expectedUserList.add(secondUser);
+        expectedUserList.add(thirdUser);
 
         List<User> users = storage.getAllUsers();
 
@@ -130,6 +145,7 @@ public class InMemoryUserStorageTest {
         assertEqualsUser(users.get(0), firstUser);
         assertEqualsUser(users.get(1), secondUser);
         assertEqualsUser(users.get(2), thirdUser);
+        assertEquals(expectedUserList, storage.getAllUsers());
     }
 
     @Test
@@ -145,6 +161,14 @@ public class InMemoryUserStorageTest {
         Optional<User> ourUser = storage.getUserById(createdUser.getId());
 
         assertEqualsUser(createdUser, ourUser.get());
+    }
+
+    @Test
+    public void getUserById_whenUserIsNull_returnEmptyOptional() {
+
+        Optional<User> ourUser = storage.getUserById(5);
+
+        assertEquals(true, ourUser.isEmpty());
     }
 
     @Test

@@ -21,7 +21,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         this.id = 0;
         this.likes = new HashMap<>();
     }
-    public Map<Integer, Set<Integer>> getLikes() {
+    Map<Integer, Set<Integer>> getLikes() {
         return likes;
     }
 
