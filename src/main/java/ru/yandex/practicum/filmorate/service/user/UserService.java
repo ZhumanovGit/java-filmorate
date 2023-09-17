@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service.user;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,15 +16,10 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
-    UserStorage storage;
-    ValidateService validateService;
-
-    @Autowired
-    public UserService(UserStorage storage, ValidateService validateService) {
-        this.storage = storage;
-        this.validateService = validateService;
-    }
+    final UserStorage storage;
+    final ValidateService validateService;
 
     public List<User> getAll() {
         return storage.getAllUsers();
