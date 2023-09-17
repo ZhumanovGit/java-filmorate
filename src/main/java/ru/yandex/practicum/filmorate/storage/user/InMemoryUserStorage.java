@@ -53,12 +53,12 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void deleteUser(int id) {
-       users.remove(id);
-       friends.remove(id);
-       for (Integer userId: friends.keySet()) {
-           Set<Integer> userFriends = friends.get(userId);
-           userFriends.remove(id);
-       }
+        users.remove(id);
+        friends.remove(id);
+        for (Integer userId : friends.keySet()) {
+            Set<Integer> userFriends = friends.get(userId);
+            userFriends.remove(id);
+        }
     }
 
     @Override

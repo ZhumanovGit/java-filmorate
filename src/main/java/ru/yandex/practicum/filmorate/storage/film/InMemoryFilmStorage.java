@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,6 +21,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         this.id = 0;
         this.likes = new HashMap<>();
     }
+
     Map<Integer, Set<Integer>> getLikes() {
         return likes;
     }
