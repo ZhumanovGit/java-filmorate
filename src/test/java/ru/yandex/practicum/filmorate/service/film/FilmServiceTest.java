@@ -156,7 +156,7 @@ class FilmServiceTest {
                 .id(1)
                 .login("login")
                 .email("email@ru")
-                .birthday(LocalDate.of(2000, 1,1))
+                .birthday(LocalDate.of(2000, 1, 1))
                 .build();
         when(storage.createFilm(film)).thenReturn(film);
         filmService.createFilm(film);
@@ -181,7 +181,7 @@ class FilmServiceTest {
                 .id(1)
                 .login("login")
                 .email("email@ru")
-                .birthday(LocalDate.of(2000, 1,1))
+                .birthday(LocalDate.of(2000, 1, 1))
                 .build();
         when(storage.createFilm(film)).thenReturn(film);
         filmService.createFilm(film);
