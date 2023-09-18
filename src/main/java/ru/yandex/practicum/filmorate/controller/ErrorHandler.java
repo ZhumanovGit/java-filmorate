@@ -9,6 +9,9 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.ExceptionResponse;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 @Slf4j
 @RestControllerAdvice(basePackages = "ru.yandex.practicum.filmorate.controller")
 public class ErrorHandler {
@@ -30,8 +33,15 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ExceptionResponse handleOtherExceptions(final RuntimeException e) {
-        log.warn("Внутреннее исключение {}. StackTrace: {}", e.getMessage(), e.getStackTrace());
-        return new ExceptionResponse(e.getMessage(), e.getStackTrace());
+        log.warn("Внутреннее исключение {} " + printStackTrace(e), e.getMessage());
+        return new ExceptionResponse(e.getMessage(), printStackTrace(e));
+    }
+
+    private String printStackTrace(RuntimeException e) {
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        e.printStackTrace(printWriter);
+        return stringWriter.toString();
     }
 
 }

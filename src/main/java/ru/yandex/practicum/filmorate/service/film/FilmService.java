@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -27,11 +26,8 @@ public class FilmService {
     }
 
     public Film getFilmById(int id) {
-        Optional<Film> mayBeFilm = filmStorage.getFilmById(id);
-        if (mayBeFilm.isEmpty()) {
-            throw new NotFoundException("Такого фильма еще не существует в библиотеке");
-        }
-        return mayBeFilm.get();
+        return filmStorage.getFilmById(id)
+                .orElseThrow(() -> new NotFoundException("Такого фильма еще не существует в библиотеке"));
     }
 
     public Film createFilm(Film film) {
@@ -42,8 +38,8 @@ public class FilmService {
     public void updateFilm(Film film) {
         validateService.validateUpdateFilm(film);
         int filmId = film.getId();
-        Film oldFilm = getFilmById(filmId);
-        film.setLikesCount(oldFilm.getLikesCount());
+        Film oldFilm = filmStorage.getFilmById(filmId)
+                .orElseThrow(() -> new NotFoundException("Такого фильма еще не существует в библиотеке"));
 
         filmStorage.updateFilm(film);
     }
@@ -58,28 +54,18 @@ public class FilmService {
 
     public void likeFilm(int userId, int filmId) {
         Film film = getFilmById(filmId);
-        Optional<User> mayBeUser = userStorage.getUserById(userId);
+        User user = userStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
-        if (mayBeUser.isEmpty()) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
-        int newLikesCount = film.getLikesCount() + 1;
-        film.setLikesCount(newLikesCount);
-
-        filmStorage.addLike(film, mayBeUser.get());
+        filmStorage.addLike(film, user);
     }
 
     public void unLikeFilm(int userId, int filmId) {
         Film film = getFilmById(filmId);
-        Optional<User> mayBeUser = userStorage.getUserById(userId);
+        User user = userStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
-        if (mayBeUser.isEmpty()) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
-        int newLikesCount = film.getLikesCount() - 1;
-        film.setLikesCount(newLikesCount);
-
-        filmStorage.deleteLike(film, mayBeUser.get());
+        filmStorage.deleteLike(film, user);
     }
 
     public List<Film> getPopularFilms(Integer count) {

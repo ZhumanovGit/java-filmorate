@@ -7,8 +7,7 @@ import ru.yandex.practicum.filmorate.exception.WrongArgumentException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
-
-import java.util.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
@@ -84,11 +83,8 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(required = false) Integer count) {
+    public List<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
         log.info("Обработка запроса с получением списка популярных фильмов");
-        if (count == null) {
-            count = 10;
-        }
         if (count <= 0) {
             throw new WrongArgumentException("Недопустимое значение count");
         }

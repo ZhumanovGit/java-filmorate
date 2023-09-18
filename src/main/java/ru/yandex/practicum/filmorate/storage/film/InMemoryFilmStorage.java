@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -9,21 +10,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@AllArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
 
-    final Map<Integer, Film> films;
-    int id;
-    Map<Integer, Set<Integer>> likes;
+    private final Map<Integer, Film> films;
+    private int id;
+    private final Map<Integer, Set<Integer>> likes;
 
     @Autowired
     public InMemoryFilmStorage() {
         this.films = new LinkedHashMap<>();
         this.id = 0;
         this.likes = new HashMap<>();
-    }
-
-    Map<Integer, Set<Integer>> getLikes() {
-        return likes;
     }
 
     int createId() {
@@ -42,6 +40,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void updateFilm(Film film) {
         int filmId = film.getId();
+        film.setLikesCount(films.get(filmId).getLikesCount());
         films.put(filmId, film);
         if (likes.get(filmId) == null) {
             likes.put(filmId, new HashSet<>());
@@ -77,6 +76,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         Set<Integer> newLikesOfFilm = likes.get(filmId);
         newLikesOfFilm.add(userId);
         likes.put(filmId, newLikesOfFilm);
+        int newLikesCount = film.getLikesCount() + 1;
+        film.setLikesCount(newLikesCount);
     }
 
     @Override
@@ -86,10 +87,12 @@ public class InMemoryFilmStorage implements FilmStorage {
         Set<Integer> newLikesOfFilm = likes.get(filmId);
         newLikesOfFilm.remove(userId);
         likes.put(filmId, newLikesOfFilm);
+        int newLikesCount = film.getLikesCount() - 1;
+        film.setLikesCount(newLikesCount);
     }
 
     @Override
-    public List<Film> getPopularFilms(Integer count) {
+    public List<Film> getPopularFilms(int count) {
         return getFilms().stream()
                 .sorted(Comparator.comparing(Film::getLikesCount).reversed())
                 .limit(count)

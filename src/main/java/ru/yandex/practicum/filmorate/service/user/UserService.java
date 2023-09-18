@@ -9,8 +9,8 @@ import ru.yandex.practicum.filmorate.service.ValidateService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,13 +25,8 @@ public class UserService {
     }
 
     public User getUserById(int id) {
-        Optional<User> mayBeUser = storage.getUserById(id);
-
-        if (mayBeUser.isEmpty()) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
-
-        return mayBeUser.get();
+        return storage.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
     }
 
     public User createUser(User user) {
@@ -43,7 +38,8 @@ public class UserService {
     public void updateUser(User user) {
         validateService.validateUpdateUser(user);
         int userId = user.getId();
-        getUserById(userId);
+        storage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
         storage.updateUser(user);
     }
@@ -57,22 +53,27 @@ public class UserService {
     }
 
     public void addFriend(int id, int friendId) {
-        User firstUser = getUserById(id);
-        User secondUser = getUserById(friendId);
+        User firstUser = storage.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
+        User secondUser = storage.getUserById(friendId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
         storage.addFriend(firstUser, secondUser);
     }
 
     public void deleteFriend(int id, int friendId) {
-        User firstUser = getUserById(id);
-        User secondUser = getUserById(friendId);
+        User firstUser = storage.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
+        User secondUser = storage.getUserById(friendId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
         storage.deleteFriend(firstUser, secondUser);
 
     }
 
     public List<User> getUserFriends(int id) {
-        getUserById(id);
+        storage.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
         List<Integer> userFriendsIds = storage.getUserFriends(id);
         if (userFriendsIds == null) {
@@ -89,7 +90,7 @@ public class UserService {
         List<User> secondList = getUserFriends(friendId);
 
         if (firstList.isEmpty() || secondList.isEmpty()) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         return firstList.stream()

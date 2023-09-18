@@ -9,5 +9,5 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 public class ExceptionResponse {
     final String exception;
-    StackTraceElement[] stackTrace;
+    String stackTrace;
 }

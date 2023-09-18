@@ -2,10 +2,6 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -22,19 +18,18 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class FilmServiceTest {
-    @Mock
     FilmStorage storage;
-    @Mock
     UserStorage userStorage;
-    @InjectMocks
     FilmService filmService;
 
     @BeforeEach
     public void beforeEach() {
+        storage = mock(FilmStorage.class);
+        userStorage = mock(UserStorage.class);
         filmService = new FilmService(storage, userStorage, new ValidateService());
     }
 
@@ -95,7 +90,7 @@ class FilmServiceTest {
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
                 .build();
-        when(storage.getFilmById(1)).thenReturn(Optional.of(film));
+        when(storage.getFilmById(film.getId())).thenReturn(Optional.of(film));
 
         Film actualFilm = filmService.getFilmById(1);
 
@@ -160,10 +155,10 @@ class FilmServiceTest {
                 .build();
         when(storage.createFilm(film)).thenReturn(film);
         filmService.createFilm(film);
-        when(storage.getFilmById(1)).thenReturn(Optional.of(film));
-        when(userStorage.getUserById(1)).thenReturn(Optional.of(user));
+        when(storage.getFilmById(film.getId())).thenReturn(Optional.of(film));
+        when(userStorage.getUserById(user.getId())).thenReturn(Optional.of(user));
 
-        filmService.likeFilm(1, 1);
+        filmService.likeFilm(user.getId(), film.getId());
 
         assertEquals(1, film.getLikesCount());
     }
@@ -187,9 +182,9 @@ class FilmServiceTest {
         filmService.createFilm(film);
         when(storage.getFilmById(1)).thenReturn(Optional.of(film));
         when(userStorage.getUserById(1)).thenReturn(Optional.of(user));
-        filmService.likeFilm(1, 1);
+        filmService.likeFilm(user.getId(), film.getId());
 
-        filmService.unLikeFilm(1, 1);
+        filmService.unLikeFilm(user.getId(), film.getId());
 
         assertEquals(0, film.getLikesCount());
     }

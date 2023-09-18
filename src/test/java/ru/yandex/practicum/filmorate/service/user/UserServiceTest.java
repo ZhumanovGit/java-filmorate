@@ -2,10 +2,6 @@ package ru.yandex.practicum.filmorate.service.user;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -18,18 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-    @Mock
     UserStorage storage;
-    @InjectMocks
     UserService userService;
 
     @BeforeEach
     public void beforeEach() {
+        storage = mock(UserStorage.class);
         userService = new UserService(storage, new ValidateService());
     }
 
@@ -92,9 +88,9 @@ class UserServiceTest {
                 .login("testLogin")
                 .birthday(LocalDate.of(2021, Month.DECEMBER, 3))
                 .build();
-        when(storage.getUserById(1)).thenReturn(Optional.of(user));
+        when(storage.getUserById(user.getId())).thenReturn(Optional.of(user));
 
-        User actualUser = userService.getUserById(1);
+        User actualUser = userService.getUserById(user.getId());
 
         assertEqualsUser(user, actualUser);
     }
@@ -151,9 +147,9 @@ class UserServiceTest {
                 .build();
         userService.createUser(user);
         List<User> expectedFriends = new ArrayList<>();
-        when(storage.getUserById(1)).thenReturn(Optional.of(user));
+        when(storage.getUserById(user.getId())).thenReturn(Optional.of(user));
 
-        List<User> actualList = userService.getUserFriends(1);
+        List<User> actualList = userService.getUserFriends(user.getId());
 
         assertEquals(expectedFriends, actualList);
     }
@@ -184,15 +180,15 @@ class UserServiceTest {
         userService.createUser(user);
         userService.createUser(secondUser);
         userService.createUser(thirdUser);
-        when(storage.getUserById(1)).thenReturn(Optional.of(user));
-        when(storage.getUserById(2)).thenReturn(Optional.of(secondUser));
-        when(storage.getUserById(3)).thenReturn(Optional.of(thirdUser));
-        userService.addFriend(1, 2);
-        userService.addFriend(1, 3);
+        when(storage.getUserById(user.getId())).thenReturn(Optional.of(user));
+        when(storage.getUserById(secondUser.getId())).thenReturn(Optional.of(secondUser));
+        when(storage.getUserById(thirdUser.getId())).thenReturn(Optional.of(thirdUser));
+        userService.addFriend(user.getId(), secondUser.getId());
+        userService.addFriend(user.getId(), secondUser.getId());
         List<User> expectedFriends = List.of(secondUser, thirdUser);
-        when(storage.getUserFriends(1)).thenReturn(List.of(2, 3));
+        when(storage.getUserFriends(user.getId())).thenReturn(List.of(secondUser.getId(), thirdUser.getId()));
 
-        List<User> actualList = userService.getUserFriends(1);
+        List<User> actualList = userService.getUserFriends(user.getId());
 
         assertEquals(expectedFriends, actualList);
     }
