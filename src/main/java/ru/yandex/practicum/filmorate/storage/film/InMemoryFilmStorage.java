@@ -89,6 +89,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         likes.put(filmId, newLikesOfFilm);
         int newLikesCount = film.getLikesCount() - 1;
         film.setLikesCount(newLikesCount);
+
     }
 
     @Override

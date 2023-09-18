@@ -18,8 +18,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class FilmServiceTest {
     FilmStorage storage;
@@ -160,7 +159,7 @@ class FilmServiceTest {
 
         filmService.likeFilm(user.getId(), film.getId());
 
-        assertEquals(1, film.getLikesCount());
+        verify(storage).addLike(film, user);
     }
 
     @Test
@@ -186,7 +185,7 @@ class FilmServiceTest {
 
         filmService.unLikeFilm(user.getId(), film.getId());
 
-        assertEquals(0, film.getLikesCount());
+        verify(storage).deleteLike(film, user);
     }
 
     @Test
