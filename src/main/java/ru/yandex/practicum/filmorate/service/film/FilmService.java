@@ -53,7 +53,8 @@ public class FilmService {
     }
 
     public void likeFilm(int userId, int filmId) {
-        Film film = getFilmById(filmId);
+        Film film = filmStorage.getFilmById(filmId)
+                .orElseThrow(() -> new NotFoundException("Такого фильма еще не существует в библиотеке"));
         User user = userStorage.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
@@ -61,7 +62,8 @@ public class FilmService {
     }
 
     public void unLikeFilm(int userId, int filmId) {
-        Film film = getFilmById(filmId);
+        Film film = filmStorage.getFilmById(filmId)
+                .orElseThrow(() -> new NotFoundException("Такого фильма еще не существует в библиотеке"));
         User user = userStorage.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 

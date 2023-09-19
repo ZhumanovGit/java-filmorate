@@ -32,6 +32,10 @@ public class UserService {
     public User createUser(User user) {
         validateService.validateCreateUser(user);
 
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+
         return storage.createUser(user);
     }
 
@@ -40,6 +44,10 @@ public class UserService {
         int userId = user.getId();
         storage.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
+
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
 
         storage.updateUser(user);
     }
@@ -53,21 +61,21 @@ public class UserService {
     }
 
     public void addFriend(int id, int friendId) {
-        User firstUser = storage.getUserById(id)
+        User user = storage.getUserById(id)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
-        User secondUser = storage.getUserById(friendId)
+        User friend = storage.getUserById(friendId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
-        storage.addFriend(firstUser, secondUser);
+        storage.addFriend(user, friend);
     }
 
     public void deleteFriend(int id, int friendId) {
-        User firstUser = storage.getUserById(id)
+        User user = storage.getUserById(id)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
-        User secondUser = storage.getUserById(friendId)
+        User friend = storage.getUserById(friendId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
-        storage.deleteFriend(firstUser, secondUser);
+        storage.deleteFriend(user, friend);
 
     }
 
@@ -81,20 +89,22 @@ public class UserService {
         }
 
         return userFriendsIds.stream()
-                .map(this::getUserById)
+                .map(storage::getUserById)
+                .map(mayBeUser -> mayBeUser
+                        .orElseThrow(() -> new NotFoundException("Такого пользователя не существует")))
                 .collect(Collectors.toList());
     }
 
     public List<User> getMutualFriends(int id, int friendId) {
-        List<User> firstList = getUserFriends(id);
-        List<User> secondList = getUserFriends(friendId);
+        List<User> userList = getUserFriends(id);
+        List<User> friendList = getUserFriends(friendId);
 
-        if (firstList.isEmpty() || secondList.isEmpty()) {
+        if (userList.isEmpty() || friendList.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return firstList.stream()
-                .filter(secondList::contains)
+        return userList.stream()
+                .filter(friendList::contains)
                 .collect(Collectors.toList());
     }
 }
