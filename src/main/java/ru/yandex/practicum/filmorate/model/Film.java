@@ -14,4 +14,6 @@ public class Film {
     private LocalDate releaseDate;
     private int duration;
     private int likesCount;
+    private Genre[] genres;
+    private ratingMPA MPA;
 }
