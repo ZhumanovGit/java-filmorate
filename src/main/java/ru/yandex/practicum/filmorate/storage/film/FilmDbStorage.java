@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 import java.util.Optional;
 
-@Component
+@Component("filmDbStorage")
 public class FilmDbStorage implements FilmStorage{
     @Override
     public Film createFilm(Film film) {

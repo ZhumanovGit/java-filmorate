@@ -18,14 +18,12 @@ import java.util.List;
 @Slf4j
 public class FilmService {
 
-    @Qualifier("filmDbStorage")
     final FilmStorage filmStorage;
-    @Qualifier("userDbStorage")
     final UserStorage userStorage;
     final ValidateService validateService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage, ValidateService validateService) {
+    public FilmService(@Qualifier("filmDbStorage")FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, ValidateService validateService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.validateService = validateService;

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-@Component
+@Component("userDbStorage")
 @Slf4j
 @RequiredArgsConstructor
 public class UserDdStorage implements UserStorage{

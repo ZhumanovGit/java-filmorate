@@ -40,6 +40,6 @@ CREATE TABLE IF NOT EXISTS viewer_friends (
 	CONSTRAINT friendship_pk PRIMARY KEY(viewer_id, friend_id)
 );
 
-ALTER TABLE viewers ADD CONSTRAINT uq_email UNIQUE (email);
+ALTER TABLE viewers ADD CONSTRAINT IF NOT EXISTS uq_email UNIQUE (email);
 
-ALTER TABLE viewers ADD CONSTRAINT uq_login UNIQUE (login);
+ALTER TABLE viewers ADD CONSTRAINT IF NOT EXISTS uq_login UNIQUE (login);

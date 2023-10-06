@@ -18,12 +18,11 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class UserService {
-    @Qualifier("userDbStorage")
     final UserStorage storage;
     final ValidateService validateService;
 
     @Autowired
-    public UserService(UserStorage storage, ValidateService validateService) {
+    public UserService(@Qualifier("userDbStorage") UserStorage storage, ValidateService validateService) {
         this.storage = storage;
         this.validateService = validateService;
     }
