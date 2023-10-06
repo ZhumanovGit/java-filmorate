@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -14,12 +16,20 @@ import java.util.List;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class FilmService {
 
+    @Qualifier("filmDbStorage")
     final FilmStorage filmStorage;
+    @Qualifier("userDbStorage")
     final UserStorage userStorage;
     final ValidateService validateService;
+
+    @Autowired
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage, ValidateService validateService) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+        this.validateService = validateService;
+    }
 
     public List<Film> getAll() {
         return filmStorage.getFilms();
