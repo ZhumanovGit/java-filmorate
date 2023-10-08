@@ -1,21 +1,20 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-@Component("userDbStorage")
-@Slf4j
+@Repository("userDbStorage")
 @RequiredArgsConstructor
 public class UserDdStorage implements UserStorage{
 
@@ -23,73 +22,103 @@ public class UserDdStorage implements UserStorage{
 
     @Override
     public User createUser(User user) {
-        return null;
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("viewers")
+                .usingGeneratedKeyColumns("viewer_id");
+
+        int userId = simpleJdbcInsert.executeAndReturnKey(user.toMap()).intValue();
+        user.setId(userId);
+        return user;
     }
 
     @Override
     public User updateUser(User user) {
-        return null;
+        String sqlQuery = "UPDATE viewers SET email = ?, login = ?, viewer_name = ?, birthday = ?" +
+                "WHERE viewer_id = ?";
+        jdbcTemplate.update(sqlQuery
+                , user.getEmail()
+                , user.getLogin()
+                , user.getName()
+                , user.getBirthday()
+                , user.getId());
+        return user;
     }
 
     @Override
     public void deleteUser(int id) {
+        String sqlQuery = "DELETE FROM viewers WHERE viewer_id = ?";
+        jdbcTemplate.update(sqlQuery, id);
 
     }
 
     @Override
     public void deleteAllUsers() {
-
+        String sqlQuery = "DELETE FROM viewers";
+        jdbcTemplate.update(sqlQuery);
     }
 
     @Override
     public List<User> getAllUsers() {
-        String sql = "select * from viewers";
+        String sql = "SELECT * FROM viewers";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
     }
 
     @Override
     public Optional<User> getUserById(int id) {
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet("select * from viewers where id = ?", id);
-
-        if (userRows.next()) {
-            User user = new User(
-                    userRows.getInt("viewer_id"),
-                    userRows.getString("email"),
-                    userRows.getString("login"),
-                    userRows.getString("viewer_name"),
-                    userRows.getDate("birthday").toLocalDate()
-            );
-
-            log.info("Найден пользователь: {} {}", user.getId(), user.getLogin());
-            return Optional.of(user);
-        } else {
-            log.info("Пользователь с идентификатором {} не найден.", id);
+        User user;
+        try {
+            String sqlQuery = "SELECT * FROM viewers WHERE viewer_id = ?";
+            user = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeUser(rs), id);
+        } catch (Exception exp) {
             return Optional.empty();
         }
+        return Optional.of(user);
+
     }
 
     @Override
     public void addFriend(User user, User friend) {
-
+        String sqlQuery = "INSERT INTO friendships (viewer_id, friend_id)" +
+                "VALUES (?, ?)";
+        jdbcTemplate.update(sqlQuery, user.getId(), friend.getId());
     }
 
     @Override
     public void deleteFriend(User user, User friend) {
+        String sqlQuery = "DELETE FROM friendships WHERE viewer_id = ? AND friend_id = ?";
 
+        jdbcTemplate.update(sqlQuery, user.getId(), friend.getId());
     }
 
     @Override
     public List<Integer> getUserFriends(int id) {
-        return null;
+        String sqlQuery = "SELECT * FROM friendships WHERE viewer_id = ?";
+        List<Friendship> friendships = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFriendship(rs), id);
+
+        return friendships.stream()
+                .map(Friendship::getFriend)
+                .map(User::getId)
+                .collect(Collectors.toList());
     }
 
     private User makeUser(ResultSet rs) throws SQLException {
-        Integer id = rs.getInt("viewer_id");
-        String email = rs.getString("email");
-        String login = rs.getString("login");
-        String name = rs.getString("viewer_name");
-        LocalDate birthday = rs.getDate("birthday").toLocalDate();
+        return User.builder()
+                .id(rs.getInt("viewer_id"))
+                .email(rs.getString("email"))
+                .login(rs.getString("login"))
+                .name(rs.getString("viewer_name"))
+                .birthday(rs.getDate("birthday").toLocalDate())
+                .build();
+    }
 
-        return new User(id, email, login, name, birthday);
+    private Friendship makeFriendship(ResultSet rs) throws SQLException {
+        Optional<User> user = getUserById(rs.getInt("viewer_id"));
+        Optional<User> friend = getUserById(rs.getInt("friend_id"));
+
+        if (user.isEmpty() || friend.isEmpty()) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+
+        return new Friendship(user.get(), friend.get());
     }
 }
