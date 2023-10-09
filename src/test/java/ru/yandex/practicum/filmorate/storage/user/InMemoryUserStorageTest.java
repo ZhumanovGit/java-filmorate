@@ -69,10 +69,10 @@ public class InMemoryUserStorageTest {
         Map<Integer, User> expectedUserMap = new LinkedHashMap<>();
         expectedUserMap.put(1, newUser);
 
-        User updatedUser = storage.updateUser(newUser);
+        storage.updateUser(newUser);
 
-        assertEquals(1, updatedUser.getId());
-        assertEquals("newUser", updatedUser.getName());
+        assertEquals(1, newUser.getId());
+        assertEquals("newUser", newUser.getName());
         assertEquals(expectedUserMap, storage.users);
     }
 

@@ -40,7 +40,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void updateFilm(Film film) {
         int filmId = film.getId();
-        film.setLikesCount(films.get(filmId).getLikesCount());
+        film.setRate(films.get(filmId).getRate());
         films.put(filmId, film);
         if (likes.get(filmId) == null) {
             likes.put(filmId, new HashSet<>());
@@ -76,8 +76,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         Set<Integer> newLikesOfFilm = likes.get(filmId);
         newLikesOfFilm.add(userId);
         likes.put(filmId, newLikesOfFilm);
-        int newLikesCount = film.getLikesCount() + 1;
-        film.setLikesCount(newLikesCount);
+        int newLikesCount = film.getRate() + 1;
+        film.setRate(newLikesCount);
     }
 
     @Override
@@ -87,15 +87,15 @@ public class InMemoryFilmStorage implements FilmStorage {
         Set<Integer> newLikesOfFilm = likes.get(filmId);
         newLikesOfFilm.remove(userId);
         likes.put(filmId, newLikesOfFilm);
-        int newLikesCount = film.getLikesCount() - 1;
-        film.setLikesCount(newLikesCount);
+        int newLikesCount = film.getRate() - 1;
+        film.setRate(newLikesCount);
 
     }
 
     @Override
     public List<Film> getPopularFilms(int count) {
         return getFilms().stream()
-                .sorted(Comparator.comparing(Film::getLikesCount).reversed())
+                .sorted(Comparator.comparing(Film::getRate).reversed())
                 .limit(count)
                 .collect(Collectors.toList());
     }

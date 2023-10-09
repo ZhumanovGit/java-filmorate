@@ -32,7 +32,7 @@ public class UserDdStorage implements UserStorage{
     }
 
     @Override
-    public User updateUser(User user) {
+    public void updateUser(User user) {
         String sqlQuery = "UPDATE viewers SET email = ?, login = ?, viewer_name = ?, birthday = ?" +
                 "WHERE viewer_id = ?";
         jdbcTemplate.update(sqlQuery
@@ -41,20 +41,22 @@ public class UserDdStorage implements UserStorage{
                 , user.getName()
                 , user.getBirthday()
                 , user.getId());
-        return user;
     }
 
     @Override
     public void deleteUser(int id) {
         String sqlQuery = "DELETE FROM viewers WHERE viewer_id = ?";
         jdbcTemplate.update(sqlQuery, id);
+        String sqlQueryForFriendship = "DELETE FROM friendships WHERE viewer_id = ? OR friend_id = ?";
+        jdbcTemplate.update(sqlQueryForFriendship, id, id);
 
     }
 
     @Override
     public void deleteAllUsers() {
-        String sqlQuery = "DELETE FROM viewers";
-        jdbcTemplate.update(sqlQuery);
+        jdbcTemplate.update("DELETE FROM viewers");
+
+        jdbcTemplate.update("DELETE FROM friendships");
     }
 
     @Override

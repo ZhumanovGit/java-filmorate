@@ -33,12 +33,12 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) {
+    public void updateUser(User user) {
         users.put(user.getId(), user);
         if (friends.get(user.getId()) == null) {
             friends.put(user.getId(), new HashSet<>());
         }
-        return user;
+
     }
 
     @Override

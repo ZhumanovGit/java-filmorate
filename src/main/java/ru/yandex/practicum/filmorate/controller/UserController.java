@@ -21,7 +21,7 @@ public class UserController {
 
     @GetMapping
     public List<User> getUsers() {
-        log.info("Обработка зпроса с получением всех пользователей");
+        log.info("Обработка запроса с получением всех пользователей");
         List<User> users = userService.getAll();
         log.info("Получен список пользователей");
         return users;
