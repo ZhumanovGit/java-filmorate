@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Repository("genreDbStorage")
 @RequiredArgsConstructor
-public class GenreDbStorage implements GenreStorage{
+public class GenreDbStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -73,7 +73,7 @@ public class GenreDbStorage implements GenreStorage{
                 "                WHERE fg.film_id = ?;";
         List<Genre> filmGenres;
         try {
-             filmGenres = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenre(rs), filmId);
+            filmGenres = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenre(rs), filmId);
         } catch (NullPointerException e) {
             return new ArrayList<>();
         }

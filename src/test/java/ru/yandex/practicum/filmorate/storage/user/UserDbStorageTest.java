@@ -164,12 +164,12 @@ class UserDbStorageTest {
         assertThat(userOptional)
                 .isPresent()
                 .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("id",newUserId)
+                        assertThat(user).hasFieldOrPropertyWithValue("id", newUserId)
                                 .hasFieldOrPropertyWithValue("name", "Oleg")
                                 .hasFieldOrPropertyWithValue("login", "niceOleg43")
                                 .hasFieldOrPropertyWithValue("email", "nicOleg@gg.ru")
                                 .hasFieldOrPropertyWithValue("birthday", LocalDate.of(2020, 12, 1))
-                                );
+                );
 
     }
 

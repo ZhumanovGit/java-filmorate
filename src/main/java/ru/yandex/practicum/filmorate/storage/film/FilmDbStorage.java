@@ -15,7 +15,9 @@ import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository("filmDbStorage")
@@ -106,7 +108,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilms() {
-        String sqlQuery = "SELECT * "+
+        String sqlQuery = "SELECT * " +
                 "FROM films;";
 
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
@@ -116,7 +118,7 @@ public class FilmDbStorage implements FilmStorage {
     public Optional<Film> getFilmById(int id) {
         Film film;
         try {
-            String sqlQuery = "SELECT * "+
+            String sqlQuery = "SELECT * " +
                     "FROM films " +
                     "WHERE film_id = ?;";
             film = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeFilm(rs), id);
@@ -174,7 +176,7 @@ public class FilmDbStorage implements FilmStorage {
                 .build();
         int mpaId = rs.getInt("rating_mpa_id");
         Mpa filmMpa = mpaStorage.getMpaById(mpaId)
-                        .orElseThrow(() -> new NotFoundException("Нет рейтинга с таким id"));
+                .orElseThrow(() -> new NotFoundException("Нет рейтинга с таким id"));
         film.setMpa(filmMpa);
 
         film.setGenres(genreStorage.getAllGenresForFilm(film.getId()));

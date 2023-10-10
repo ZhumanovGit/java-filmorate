@@ -14,6 +14,7 @@ import java.util.List;
 public class GenreController {
 
     GenreService genreService;
+
     @Autowired
     public GenreController(GenreService genreService) {
         this.genreService = genreService;

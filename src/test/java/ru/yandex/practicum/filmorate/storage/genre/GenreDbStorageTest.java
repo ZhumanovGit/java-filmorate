@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -37,7 +36,7 @@ class GenreDbStorageTest {
         assertThat(createdGenre).hasFieldOrPropertyWithValue("id", genreId)
                 .hasFieldOrPropertyWithValue("name", "Комедия");
     }
-    
+
     @Test
     public void createGenre_whenGenreWithNoId_thanReturnGenre() {
         Genre genre = Genre.builder().name("Комедия").build();
@@ -57,7 +56,7 @@ class GenreDbStorageTest {
                 .id(genreId)
                 .name("неКомедия")
                 .build();
-        
+
         genreDbStorage.updateGenre(newGenre);
 
         assertThat(newGenre).hasFieldOrPropertyWithValue("id", genreId)

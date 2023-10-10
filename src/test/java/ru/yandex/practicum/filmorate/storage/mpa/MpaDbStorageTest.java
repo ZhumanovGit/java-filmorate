@@ -16,20 +16,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class MpaDbStorageTest {
-        
+
     private final MpaDbStorage mpaDbStorage;
-    
+
     @Test
     public void createMpa_whenMpaIsCorrect_thanReturnMpa() {
         Mpa mpa = new Mpa(1, "G");
-        
+
         Mpa newMpa = mpaDbStorage.createMpa(mpa);
         int newMpaId = newMpa.getId();
 
         assertThat(newMpa).hasFieldOrPropertyWithValue("id", newMpaId)
                 .hasFieldOrPropertyWithValue("name", "G");
     }
-    
+
     @Test
     public void createMpa_whenMpaHasNoId_thanReturnMpaWithId() {
         Mpa mpa = Mpa.builder().name("G").build();
@@ -39,7 +39,7 @@ class MpaDbStorageTest {
 
         assertThat(newMpa).hasFieldOrPropertyWithValue("id", newMpaId)
                 .hasFieldOrPropertyWithValue("name", "G");
-        
+
     }
 
     @Test
@@ -50,9 +50,9 @@ class MpaDbStorageTest {
                 .id(mpaId)
                 .name("newMpa")
                 .build();
-        
+
         mpaDbStorage.updateMpa(newMpa);
-        
+
         assertThat(newMpa).hasFieldOrPropertyWithValue("id", mpaId)
                 .hasFieldOrPropertyWithValue("name", "newMpa");
     }

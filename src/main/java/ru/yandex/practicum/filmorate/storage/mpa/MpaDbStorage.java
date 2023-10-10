@@ -13,9 +13,10 @@ import java.util.Optional;
 
 @Repository("mpaDbStorage")
 @RequiredArgsConstructor
-public class MpaDbStorage implements MpaStorage{
+public class MpaDbStorage implements MpaStorage {
 
     private final JdbcTemplate jdbcTemplate;
+
     @Override
     public Mpa createMpa(Mpa mpa) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
@@ -38,7 +39,7 @@ public class MpaDbStorage implements MpaStorage{
         try {
             String sqlQuery = "SELECT * FROM ratingMPA WHERE id = ?";
             mpa = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeMpa(rs), id);
-        }catch (Exception exp) {
+        } catch (Exception exp) {
             return Optional.empty();
         }
         return Optional.of(mpa);

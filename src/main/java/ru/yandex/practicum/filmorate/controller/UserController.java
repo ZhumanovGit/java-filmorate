@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
-import java.util.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")

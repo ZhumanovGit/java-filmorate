@@ -53,6 +53,7 @@ public class MpaController {
         log.info("Обновлен рейтинг с id = {}", mpaId);
         return mpaService.getMpaById(mpaId);
     }
+
     @DeleteMapping("/{mpaId}")
     public void deleteMpaById(@PathVariable int mpaId) {
         log.info("Обработка запроса с удалением mpa рейтинга c id = {}", mpaId);
