@@ -41,6 +41,12 @@ CREATE TABLE IF NOT EXISTS friendships (
 	CONSTRAINT friendship_pk PRIMARY KEY(viewer_id, friend_id)
 );
 
+CREATE TABLE IF NOT EXISTS likes (
+    viewer_id integer NOT NULL REFERENCES viewers (viewer_id),
+    film_id integer NOT NULL REFERENCES films (film_id),
+    CONSTRAINT likes_pk PRIMARY KEY(viewer_id, film_id)
+);
+
 ALTER TABLE viewers ADD CONSTRAINT IF NOT EXISTS uq_email UNIQUE (email);
 
 ALTER TABLE viewers ADD CONSTRAINT IF NOT EXISTS uq_login UNIQUE (login);

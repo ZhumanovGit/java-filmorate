@@ -9,6 +9,7 @@ import java.util.Map;
 
 @Data
 @Builder
+@AllArgsConstructor
 public class Mpa {
 
     private int id;

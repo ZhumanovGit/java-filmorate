@@ -16,32 +16,30 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage{
 
-    JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public Genre createGenre(Genre genre) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("genre")
                 .usingGeneratedKeyColumns("id");
-
         int genreId = simpleJdbcInsert.executeAndReturnKey(genre.toMap()).intValue();
         genre.setId(genreId);
-
         return genre;
     }
 
     @Override
     public void updateGenre(Genre genre) {
-        String sqlQuery = "UPDATE genre SET name  = ?";
+        String sqlQuery = "UPDATE genre SET name  = ? WHERE id = ?";
 
-        jdbcTemplate.update(sqlQuery, genre.getName());
+        jdbcTemplate.update(sqlQuery, genre.getName(), genre.getId());
     }
 
     @Override
     public Optional<Genre> getGenreById(int id) {
-        String sqlQuery = "SELECT * FROM genre WHERE id = ?";
         Genre genre;
         try {
+            String sqlQuery = "SELECT * FROM genre WHERE id = ?";
             genre = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeGenre(rs), id);
         } catch (Exception exp) {
             return Optional.empty();
@@ -72,6 +70,9 @@ public class GenreDbStorage implements GenreStorage{
     }
 
     private Genre makeGenre(ResultSet rs) throws SQLException {
-        return new Genre(rs.getInt("id"), rs.getString("name"));
+        return Genre.builder()
+                .id(rs.getInt("id"))
+                .name(rs.getString("name"))
+                .build();
     }
 }

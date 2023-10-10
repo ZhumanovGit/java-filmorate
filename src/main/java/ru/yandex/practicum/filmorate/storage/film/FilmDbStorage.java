@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -14,18 +15,17 @@ import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository("filmDbStorage")
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
+    @Getter
     private final GenreStorage genreStorage;
-
+    @Getter
     private final MpaStorage mpaStorage;
 
     @Override
@@ -43,10 +43,14 @@ public class FilmDbStorage implements FilmStorage {
             return film;
         }
 
-        for (Genre genre : film.getGenres()) {
+        Set<Integer> uniqueGenreIds = film.getGenres().stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
+
+        for (int genreId : uniqueGenreIds) {
             String sqlQueryForGenres = "INSERT INTO film_genre(film_id, genre_id)" +
-                    "VALUES (?, ?);";
-            jdbcTemplate.update(sqlQueryForGenres, filmId, genre.getId());
+                    "VALUES (?, ?)";
+            jdbcTemplate.update(sqlQueryForGenres, filmId, genreId);
         }
 
         return film;
@@ -73,11 +77,14 @@ public class FilmDbStorage implements FilmStorage {
             return;
         }
 
-        for (Genre genre : film.getGenres()) {
+        Set<Integer> uniqueGenreIds = film.getGenres().stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
+
+        for (int genreId : uniqueGenreIds) {
             String sqlQueryForGenres = "INSERT INTO film_genre(film_id, genre_id)" +
-                    "VALUES (?, ?) " +
-                    "ON CONFLICT ON CONSTRAINT CONSTRAINT_79D DO NOTHING;";
-            jdbcTemplate.update(sqlQueryForGenres, film.getId(), genre.getId());
+                    "VALUES (?, ?) ";
+            jdbcTemplate.update(sqlQueryForGenres, film.getId(), genreId);
         }
     }
 
@@ -143,7 +150,7 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE film_id = ?";
         jdbcTemplate.update(sqlQuery, film.getRate(), film.getId());
 
-        String sqlQueryForLikes = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+        String sqlQueryForLikes = "DELETE FROM likes WHERE film_id = ? AND viewer_id = ?";
         jdbcTemplate.update(sqlQueryForLikes, film.getId(), user.getId());
     }
 

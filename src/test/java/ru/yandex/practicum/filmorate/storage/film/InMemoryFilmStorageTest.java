@@ -45,7 +45,7 @@ class InMemoryFilmStorageTest {
 
         assertEqualsFilm(film, newFilm);
         assertEquals(expectedFilmsList, storage.getFilms());
-        assertEquals(0, newFilm.getLikesCount());
+        assertEquals(0, newFilm.getRate());
     }
 
     @Test
@@ -184,7 +184,7 @@ class InMemoryFilmStorageTest {
 
         storage.addLike(createdFilm, user);
 
-        assertEquals(1, createdFilm.getLikesCount());
+        assertEquals(1, createdFilm.getRate());
     }
 
     @Test
@@ -206,7 +206,7 @@ class InMemoryFilmStorageTest {
 
         storage.deleteLike(createdFilm, user);
 
-        assertEquals(0, createdFilm.getLikesCount());
+        assertEquals(0, createdFilm.getRate());
     }
 
     @Test
@@ -225,8 +225,8 @@ class InMemoryFilmStorageTest {
                 .build();
         Film createdFilm = storage.createFilm(firstFilm);
         Film secondCreatedFilm = storage.createFilm(secondFilm);
-        createdFilm.setLikesCount(10);
-        secondCreatedFilm.setLikesCount(5);
+        createdFilm.setRate(10);
+        secondCreatedFilm.setRate(5);
 
         List<Film> films = storage.getPopularFilms(2);
 
