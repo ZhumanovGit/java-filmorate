@@ -58,7 +58,7 @@ class MpaDbStorageTest {
     }
 
     @Test
-    public void getMpaById() {
+    public void getMpaById_whenMpaWasFound_returnOptionalWithMpa() {
         Mpa mpa = mpaDbStorage.createMpa(new Mpa(1, "G"));
         int mpaId = mpa.getId();
 
