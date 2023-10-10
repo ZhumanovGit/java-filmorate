@@ -44,6 +44,14 @@ public class MpaService {
         }
         storage.updateMpa(mpa);
     }
+
+    public void deleteAllMpa() {
+        storage.deleteAllMpa();
+    }
+
+    public void deleteMpaById(int id) {
+        storage.deleteMpaById(id);
+    }
     
     
 }

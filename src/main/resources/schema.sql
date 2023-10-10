@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS genre (
 );
 
 CREATE TABLE IF NOT EXISTS film_genre (
-	film_id integer REFERENCES films (film_id),
-	genre_id integer REFERENCES genre (id),
+	film_id integer REFERENCES films (film_id) ON DELETE CASCADE,
+	genre_id integer REFERENCES genre (id) ON DELETE CASCADE,
 	
 	PRIMARY KEY (film_id, genre_id)
 );
@@ -36,14 +36,14 @@ CREATE TABLE IF NOT EXISTS viewers (
 );
 
 CREATE TABLE IF NOT EXISTS friendships (
-	viewer_id integer NOT NULL REFERENCES viewers (viewer_id),
-	friend_id integer NOT NULL REFERENCES viewers (viewer_id),
+	viewer_id integer NOT NULL REFERENCES viewers (viewer_id) ON DELETE CASCADE,
+	friend_id integer NOT NULL REFERENCES viewers (viewer_id) ON DELETE CASCADE,
 	CONSTRAINT friendship_pk PRIMARY KEY(viewer_id, friend_id)
 );
 
 CREATE TABLE IF NOT EXISTS likes (
-    viewer_id integer NOT NULL REFERENCES viewers (viewer_id),
-    film_id integer NOT NULL REFERENCES films (film_id),
+    viewer_id integer NOT NULL REFERENCES viewers (viewer_id) ON DELETE CASCADE,
+    film_id integer NOT NULL REFERENCES films (film_id) ON DELETE CASCADE,
     CONSTRAINT likes_pk PRIMARY KEY(viewer_id, film_id)
 );
 

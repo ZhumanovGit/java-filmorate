@@ -50,6 +50,18 @@ public class MpaDbStorage implements MpaStorage{
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeMpa(rs));
     }
 
+    @Override
+    public void deleteAllMpa() {
+        String sqlQuery = "DELETE FROM ratingMPA";
+        jdbcTemplate.update(sqlQuery);
+    }
+
+    @Override
+    public void deleteMpaById(int id) {
+        String sqlQuery = "DELETE FROM ratingMPA WHERE id = ?";
+        jdbcTemplate.update(sqlQuery, id);
+    }
+
     private Mpa makeMpa(ResultSet rs) throws SQLException {
         return Mpa.builder()
                 .id(rs.getInt("id"))

@@ -43,4 +43,12 @@ public class GenreService {
         storage.updateGenre(genre);
     }
 
+    public void deleteAllGenres() {
+        storage.deleteAllGenres();
+    }
+
+    public void deleteGenreById(int id) {
+        storage.deleteGenreById(id);
+    }
+
 }

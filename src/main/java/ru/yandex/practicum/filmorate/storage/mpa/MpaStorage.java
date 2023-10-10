@@ -11,4 +11,8 @@ public interface MpaStorage {
     void updateMpa(Mpa mpa);
     Optional<Mpa> getMpaById(int id);
     List<Mpa> getAll();
+
+    void deleteAllMpa();
+
+    void deleteMpaById(int id);
 }

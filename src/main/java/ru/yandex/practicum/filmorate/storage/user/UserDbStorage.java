@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Repository("userDbStorage")
 @RequiredArgsConstructor
-public class UserDdStorage implements UserStorage{
+public class UserDbStorage implements UserStorage{
 
     private final JdbcTemplate jdbcTemplate;
 

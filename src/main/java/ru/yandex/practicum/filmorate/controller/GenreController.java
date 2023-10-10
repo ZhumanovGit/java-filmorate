@@ -44,12 +44,26 @@ public class GenreController {
         return newGenre;
     }
 
-    @PutMapping()
+    @PutMapping
     public Genre updateGenre(@RequestBody Genre genre) {
         int genreId = genre.getId();
         log.info("Обрботка запроса с обновлением жанра с id = {}", genreId);
         genreService.updateGenre(genre);
         log.info("Обновлен жанр с id = {}", genreId);
         return genreService.getGenreById(genreId);
+    }
+
+    @DeleteMapping("/{genreId}")
+    public void deleteGenreById(@PathVariable int genreId) {
+        log.info("Обработка запроса с удалением жанра с id = {}", genreId);
+        genreService.deleteGenreById(genreId);
+        log.info("Жанр с id = {} удален", genreId);
+    }
+
+    @DeleteMapping
+    public void deleteAllGenres() {
+        log.info("Обработка запроса с удалением всех жанров");
+        genreService.deleteAllGenres();
+        log.info("Все жанры удалены");
     }
 }
