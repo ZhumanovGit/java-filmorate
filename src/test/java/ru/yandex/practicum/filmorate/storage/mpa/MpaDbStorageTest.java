@@ -73,8 +73,9 @@ class MpaDbStorageTest {
 
     @Test
     public void getMpaById_whenMpaIsNotFound_thanReturnEmptyOptional() {
+        mpaDbStorage.deleteAllMpa();
 
-        Optional<Mpa> optionalMpa = mpaDbStorage.getMpaById(-1);
+        Optional<Mpa> optionalMpa = mpaDbStorage.getMpaById(1);
 
         assertThat(optionalMpa).isEmpty();
     }

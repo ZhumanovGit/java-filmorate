@@ -175,6 +175,7 @@ class FilmDbStorageTest {
 
     @Test
     public void getFilms_whenStorageHasNoFilms_returnEmptyList() {
+        filmDbStorage.deleteAllFilms();
 
         List<Film> films = filmDbStorage.getFilms();
 
@@ -252,6 +253,7 @@ class FilmDbStorageTest {
 
     @Test
     public void getFilmById_thenFilmWasNotFound_returnEmptyOptional() {
+        filmDbStorage.deleteAllFilms();
 
         Optional<Film> filmOptional = filmDbStorage.getFilmById(1);
 
