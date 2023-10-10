@@ -35,12 +35,12 @@ public class UserDbStorage implements UserStorage {
     public void updateUser(User user) {
         String sqlQuery = "UPDATE viewers SET email = ?, login = ?, viewer_name = ?, birthday = ?" +
                 "WHERE viewer_id = ?";
-        jdbcTemplate.update(sqlQuery
-                , user.getEmail()
-                , user.getLogin()
-                , user.getName()
-                , user.getBirthday()
-                , user.getId());
+        jdbcTemplate.update(sqlQuery,
+                user.getEmail(),
+                user.getLogin(),
+                user.getName(),
+                user.getBirthday(),
+                user.getId());
     }
 
     @Override
