@@ -80,7 +80,7 @@ class GenreDbStorageTest {
     @Test
     public void getGenreById_whenGenreIsNotFound_thanReturnEmptyOptional() {
 
-        Optional<Genre> optionalGenre = genreDbStorage.getGenreById(45);
+        Optional<Genre> optionalGenre = genreDbStorage.getGenreById(1000);
 
         assertThat(optionalGenre).isEmpty();
     }

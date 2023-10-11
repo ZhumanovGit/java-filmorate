@@ -86,8 +86,8 @@ class UserDbStorageTest {
     @Test
     public void deleteAllUsers_whenCalled_thanDeleteAllUserFromDatabase() {
         User user = userDbStorage.createUser(User.builder()
-                .login("niceOleg")
-                .email("niceOleg@g.ru")
+                .login("niceeOleg")
+                .email("niceOleg22@g.ru")
                 .birthday(LocalDate.of(2020, 12, 1))
                 .name("Oleg")
                 .build());

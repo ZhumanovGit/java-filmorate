@@ -49,7 +49,6 @@ class FilmDbStorageTest {
     @Test
     public void createFilm_whenFilmIsCorrectAndHasGenres_saveAndReturnFilmWithGenres() {
         Mpa mpa = filmDbStorage.getMpaStorage().getMpaById(1).get();
-        System.out.println(mpa);
         List<Genre> genres = new ArrayList<>();
         genres.add(filmDbStorage.getGenreStorage().getGenreById(1).get());
         genres.add(filmDbStorage.getGenreStorage().getGenreById(2).get());
@@ -338,7 +337,7 @@ class FilmDbStorageTest {
                 .releaseDate(LocalDate.of(1967, Month.MARCH, 25))
                 .duration(100)
                 .genres(genres)
-                .rate(3)
+                .rate(4)
                 .mpa(mpa)
                 .build());
         Film thirdFilm = filmDbStorage.createFilm(Film.builder()
@@ -347,7 +346,7 @@ class FilmDbStorageTest {
                 .releaseDate(LocalDate.of(1967, Month.MARCH, 25))
                 .duration(100)
                 .genres(genres)
-                .rate(1)
+                .rate(3)
                 .mpa(mpa)
                 .build());
 
