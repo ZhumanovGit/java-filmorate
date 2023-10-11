@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS films (
 	release_date timestamp NOT NULL,
 	duration_in_minutes integer NOT NULL,
 	likes_count integer,
-	rating_MPA_id integer REFERENCES ratingMPA (id) ON DELETE CASCADE
+	rating_MPA_id integer REFERENCES ratingMPA (id)
 );
 
 CREATE TABLE IF NOT EXISTS genre (
