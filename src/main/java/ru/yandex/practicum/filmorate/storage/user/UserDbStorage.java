@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -10,7 +11,9 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -26,7 +29,7 @@ public class UserDbStorage implements UserStorage {
                 .withTableName("viewers")
                 .usingGeneratedKeyColumns("viewer_id");
 
-        int userId = simpleJdbcInsert.executeAndReturnKey(user.toMap()).intValue();
+        int userId = simpleJdbcInsert.executeAndReturnKey(toMap(user)).intValue();
         user.setId(userId);
         return user;
     }
@@ -71,7 +74,7 @@ public class UserDbStorage implements UserStorage {
         try {
             String sqlQuery = "SELECT * FROM viewers WHERE viewer_id = ?";
             user = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeUser(rs), id);
-        } catch (Exception exp) {
+        } catch (DataAccessException exp) {
             return Optional.empty();
         }
         return Optional.of(user);
@@ -122,5 +125,15 @@ public class UserDbStorage implements UserStorage {
         }
 
         return new Friendship(user.get(), friend.get());
+    }
+
+    private Map<String, Object> toMap(User user) {
+        Map<String, Object> values = new HashMap<>();
+        values.put("email", user.getEmail());
+        values.put("login", user.getLogin());
+        values.put("viewer_name", user.getName());
+        values.put("birthday", user.getBirthday());
+
+        return values;
     }
 }

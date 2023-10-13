@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.mpa;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -8,7 +9,9 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository("mpaDbStorage")
@@ -22,7 +25,7 @@ public class MpaDbStorage implements MpaStorage {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("ratingMPA")
                 .usingGeneratedKeyColumns("id");
-        int mpaId = simpleJdbcInsert.executeAndReturnKey(mpa.toMap()).intValue();
+        int mpaId = simpleJdbcInsert.executeAndReturnKey(toMap(mpa)).intValue();
         mpa.setId(mpaId);
         return mpa;
     }
@@ -39,7 +42,7 @@ public class MpaDbStorage implements MpaStorage {
         try {
             String sqlQuery = "SELECT * FROM ratingMPA WHERE id = ?";
             mpa = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeMpa(rs), id);
-        } catch (Exception exp) {
+        } catch (DataAccessException exp) {
             return Optional.empty();
         }
         return Optional.of(mpa);
@@ -68,5 +71,12 @@ public class MpaDbStorage implements MpaStorage {
                 .id(rs.getInt("id"))
                 .name(rs.getString("rating_name"))
                 .build();
+    }
+
+    private Map<String, Object> toMap(Mpa mpa) {
+        Map<String, Object> values = new HashMap<>();
+        values.put("rating_name", mpa.getName());
+
+        return values;
     }
 }

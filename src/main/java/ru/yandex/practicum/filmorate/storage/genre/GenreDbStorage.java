@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.genre;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -8,9 +9,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository("genreDbStorage")
 @RequiredArgsConstructor
@@ -23,7 +22,7 @@ public class GenreDbStorage implements GenreStorage {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("genre")
                 .usingGeneratedKeyColumns("id");
-        int genreId = simpleJdbcInsert.executeAndReturnKey(genre.toMap()).intValue();
+        int genreId = simpleJdbcInsert.executeAndReturnKey(toMap(genre)).intValue();
         genre.setId(genreId);
         return genre;
     }
@@ -41,7 +40,7 @@ public class GenreDbStorage implements GenreStorage {
         try {
             String sqlQuery = "SELECT * FROM genre WHERE id = ?";
             genre = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeGenre(rs), id);
-        } catch (Exception exp) {
+        } catch (DataAccessException exp) {
             return Optional.empty();
         }
         return Optional.of(genre);
@@ -86,5 +85,12 @@ public class GenreDbStorage implements GenreStorage {
                 .id(rs.getInt("id"))
                 .name(rs.getString("name"))
                 .build();
+    }
+
+    private Map<String, Object> toMap(Genre genre) {
+        Map<String, Object> values = new HashMap<>();
+        values.put("name", genre.getName());
+
+        return values;
     }
 }
