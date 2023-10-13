@@ -138,41 +138,34 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLike(Film film, User user) {
-        String sqlQueryForLikes = "INSERT INTO likes(film_id, viewer_id)" +
-                "VALUES (:filmId, :userId);";
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("filmId", film.getId())
-                .addValue("userId", user.getId());
-        operations.update(sqlQueryForLikes, params);
+        String sqlQueryForLikes = "INSERT INTO likes(viewer_id, film_id) " +
+                "VALUES (?, ?)";
+        operations.getJdbcOperations().update(sqlQueryForLikes, user.getId(), film.getId());
 
         film.setRate(film.getRate() + 1);
-        String sqlQuery = "UPDATE films SET " +
-                "likes_count = :rate " +
-                "WHERE film_id = :id";
-        MapSqlParameterSource rateParams = new MapSqlParameterSource();
-        params.addValue("filmId", film.getId())
-                .addValue("rate", film.getRate());
-        operations.update(sqlQuery, rateParams);
+        String sqlQuery = "UPDATE films SET likes_count = ? " +
+                "WHERE film_id = ? ";
+        operations.getJdbcOperations().update(sqlQuery, film.getRate(), film.getId());
+
 
     }
 
     @Override
     public void deleteLike(Film film, User user) {
 
-        String sqlQueryForLikes = "DELETE FROM likes WHERE film_id = :filmId AND viewer_id = :userId";
+        String sqlQueryForLikes = "DELETE FROM likes WHERE film_id = :film_id AND viewer_id = :viewer_id";
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("filmId", film.getId())
-                .addValue("userId", user.getId());
+        params.addValue("film_id", film.getId())
+                .addValue("veiwer_id", user.getId());
         operations.update(sqlQueryForLikes, params);
 
         film.setRate(film.getRate() - 1);
-        String sqlQuery = "UPDATE films SET " +
-                "likes_count = :rate " +
-                "WHERE film_id = :id";
-        MapSqlParameterSource rateParams = new MapSqlParameterSource();
-        params.addValue("filmId", film.getId())
-                .addValue("rate", film.getRate());
-        operations.update(sqlQuery, rateParams);
+        String sqlQuery = "UPDATE films SET likes_count = :likes " +
+                "WHERE film_id = filmId ";
+        MapSqlParameterSource likesParams = new MapSqlParameterSource();
+        likesParams.addValue("filmId", film.getId())
+                        .addValue("likes", film.getRate());
+        operations.update(sqlQuery, likesParams);
     }
 
     @Override
