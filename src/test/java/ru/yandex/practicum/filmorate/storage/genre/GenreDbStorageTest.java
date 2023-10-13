@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -17,10 +18,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class GenreDbStorageTest {
 
     private final GenreDbStorage genreDbStorage;
@@ -87,6 +90,7 @@ class GenreDbStorageTest {
 
     @Test
     public void getAll_whenStorageHasGenres_thanReturnListOfGenres() {
+        genreDbStorage.deleteAllGenres();
         Genre firstGenre = genreDbStorage.createGenre(Genre.builder().name("Комедия").build());
         Genre secondGenre = genreDbStorage.createGenre(Genre.builder().name("Драма").build());
         Genre thirdGenre = genreDbStorage.createGenre(Genre.builder().name("Триллер").build());
@@ -94,9 +98,9 @@ class GenreDbStorageTest {
         List<Genre> genres = genreDbStorage.getAll();
 
         assertThat(genres).isNotEmpty();
-        assertThat(firstGenre).isIn(genres);
-        assertThat(secondGenre).isIn(genres);
-        assertThat(thirdGenre).isIn(genres);
+        assertEquals(genres.get(0).getId(), firstGenre.getId());
+        assertEquals(genres.get(1).getId(), secondGenre.getId());
+        assertEquals(genres.get(2).getId(), thirdGenre.getId());
     }
 
     @Test

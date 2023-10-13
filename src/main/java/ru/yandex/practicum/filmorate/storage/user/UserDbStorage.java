@@ -1,7 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -29,7 +32,7 @@ public class UserDbStorage implements UserStorage {
 
         String sqlQuery = "INSERT INTO viewers " +
                 "(email, login, viewer_name, birthday) " +
-                "VALUE (:email, :login, :name, :birthday)";
+                "VALUES (:email, :login, :name, :birthday)";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
 
@@ -47,7 +50,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void updateUser(User user) {
-        String sqlQuery = "UPDATE viewers SET email = :email, login = :login, viewer_name = :name, birthday = :birthday" +
+        String sqlQuery = "UPDATE viewers SET email = :email, login = :login, viewer_name = :name, birthday = :birthday " +
                 "WHERE viewer_id = :id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -67,7 +70,7 @@ public class UserDbStorage implements UserStorage {
         SqlParameterSource needId = new MapSqlParameterSource("id", id);
         operations.update(sqlQueryForFriendship, needId);
 
-        String sqlQuery = "DELETE FROM viewers WHERE viewer_id = ?";
+        String sqlQuery = "DELETE FROM viewers WHERE viewer_id = :id";
         operations.update(sqlQuery, needId);
 
 
@@ -90,9 +93,8 @@ public class UserDbStorage implements UserStorage {
     public Optional<User> getUserById(int id) {
         User user;
         try {
-            String sqlQuery = "SELECT * FROM viewers WHERE viewer_id = :id";
-            SqlParameterSource userId = new MapSqlParameterSource("id", id);
-            user = operations.query(sqlQuery, userId, this::makeUser);
+            String sqlQuery = "SELECT * FROM viewers WHERE viewer_id = ?";
+            user = operations.getJdbcOperations().queryForObject(sqlQuery, (rs, rowNum) -> makeUser(rs), id);
         } catch (DataAccessException exp) {
             return Optional.empty();
         }
@@ -121,12 +123,11 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<Integer> getUserFriends(int id) {
-        String sqlQuery = "SELECT * FROM friendships WHERE viewer_id = :id";
-        SqlParameterSource userId = new MapSqlParameterSource("id", id);
-        List<List<User>> friendships = operations.query(sqlQuery, userId, (rs, rowNum) -> makeFriendship(rs));
+        String sqlQuery = "SELECT * FROM friendships WHERE viewer_id = ?";
+        List<FriendShip> friendShips =  operations.getJdbcOperations().query(sqlQuery, (rs,rowNum) -> makeFriendship(rs), id);
 
-        return friendships.stream()
-                .map(item -> item.get(1))
+        return friendShips.stream()
+                .map(FriendShip::getFriend)
                 .map(User::getId)
                 .collect(Collectors.toList());
     }
@@ -141,14 +142,18 @@ public class UserDbStorage implements UserStorage {
                 .build();
     }
 
-    private List<User> makeFriendship(ResultSet rs) throws SQLException {
-        List<User> friendship = new ArrayList<>();
-        User user = getUserById(rs.getInt("viewer_id")).get();
-        User friend = getUserById(rs.getInt("friend_id")).get();
+    private FriendShip makeFriendship(ResultSet rs) throws SQLException {
+        Optional<User> user = getUserById(rs.getInt("viewer_id"));
+        Optional<User> friend = getUserById(rs.getInt("friend_id"));
 
-        friendship.add(user);
-        friendship.add(friend);
-
-        return friendship;
+        return new FriendShip(user.get(), friend.get());
     }
+
+    @Getter
+    @AllArgsConstructor
+    class FriendShip {
+        User user;
+        User friend;
+    }
+
 }

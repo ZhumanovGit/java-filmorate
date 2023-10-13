@@ -29,7 +29,7 @@ public class MpaDbStorage implements MpaStorage {
     public Mpa createMpa(Mpa mpa) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sqlQuery = "INSERT INTO ratingMPA (rating_name) VALUE (:name)";
+        String sqlQuery = "INSERT INTO ratingMPA (rating_name) VALUES (:name)";
 
         SqlParameterSource mpaName = new MapSqlParameterSource("name", mpa.getName());
 
@@ -53,9 +53,8 @@ public class MpaDbStorage implements MpaStorage {
     public Optional<Mpa> getMpaById(int id) {
         Mpa mpa;
         try {
-            String sqlQuery = "SELECT * FROM ratingMPA WHERE id = :id";
-            SqlParameterSource mpaId = new MapSqlParameterSource("id", id);
-            mpa = operations.query(sqlQuery, mpaId, this::makeMpa);
+            String sqlQuery = "SELECT * FROM ratingMPA WHERE id = ?";
+            mpa = operations.getJdbcOperations().queryForObject(sqlQuery, (rs, rowNum) -> makeMpa(rs), id);
         } catch (DataAccessException exp) {
             return Optional.empty();
         }

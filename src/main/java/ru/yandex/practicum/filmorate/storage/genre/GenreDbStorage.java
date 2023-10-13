@@ -26,7 +26,7 @@ public class GenreDbStorage implements GenreStorage {
     public Genre createGenre(Genre genre) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sqlQuery = "INSERT INTO genre (name) VALUE (:name)";
+        String sqlQuery = "INSERT INTO genre (name) VALUES (:name)";
 
         SqlParameterSource mpaName = new MapSqlParameterSource("name", genre.getName());
 
@@ -51,9 +51,8 @@ public class GenreDbStorage implements GenreStorage {
     public Optional<Genre> getGenreById(int id) {
         Genre genre;
         try {
-            String sqlQuery = "SELECT * FROM genre WHERE id = :id";
-            SqlParameterSource genreId = new MapSqlParameterSource("id", id);
-            genre = operations.query(sqlQuery, genreId, this::makeGenre);
+            String sqlQuery = "SELECT * FROM genre WHERE id = ?";
+            genre = operations.getJdbcOperations().queryForObject(sqlQuery, (rs, rowNum) -> makeGenre(rs), id);
         } catch (DataAccessException exp) {
             return Optional.empty();
         }

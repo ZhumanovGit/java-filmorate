@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -38,7 +39,7 @@ public class FilmDbStorage implements FilmStorage {
 
         String sqlQuery = "INSERT INTO films " +
                 "(film_name, description, release_date, duration_in_minutes, likes_count, rating_mpa_id) " +
-                "VALUE (:name, :description, :release_date, :duration_in_minutes, :likes_count, :rating_mpa_id)";
+                "VALUES (:name, :description, :release_date, :duration_in_minutes, :likes_count, :rating_mpa_id)";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
 
@@ -65,8 +66,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void updateFilm(Film film) {
-        String sqlQuery = "UPDATE films SET film_name = :name, description = :description, release_date = :release_date," +
-                "duration_in_minutes = :duration, likes_count = :rate, rating_mpa_id = mpa_id" +
+        String sqlQuery = "UPDATE films SET film_name = :name, description = :description, release_date = :release_date, " +
+                "duration_in_minutes = :duration, likes_count = :rate, rating_mpa_id = :mpaId " +
                 "WHERE film_id = :id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -75,9 +76,9 @@ public class FilmDbStorage implements FilmStorage {
                 .addValue("name", film.getName())
                 .addValue("description", film.getDescription())
                 .addValue("release_date", film.getReleaseDate())
-                .addValue("duration_in_minutes", film.getDuration())
-                .addValue("likes_count", film.getRate())
-                .addValue("rating_mpa_id", film.getMpa().getId());
+                .addValue("duration", film.getDuration())
+                .addValue("rate", film.getRate())
+                .addValue("mpaId", film.getMpa().getId());
 
         operations.update(sqlQuery, params);
 
@@ -95,7 +96,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void deleteFilm(int id) {
-        String sqlQueryForFilmGenres = "DELETE FROM film_genre WHERE film_id = ?";
+        String sqlQueryForFilmGenres = "DELETE FROM film_genre WHERE film_id = :id";
         SqlParameterSource filmId = new MapSqlParameterSource("id", id);
         operations.update(sqlQueryForFilmGenres, filmId);
 
@@ -126,10 +127,11 @@ public class FilmDbStorage implements FilmStorage {
         try {
             String sqlQuery = "SELECT * " +
                     "FROM films " +
-                    "WHERE film_id = :id;";
-            SqlParameterSource filmId = new MapSqlParameterSource("id", id);
-            film = operations.query(sqlQuery, filmId, this::makeFilm);
+                    "WHERE film_id = ?;";
+            film = operations.getJdbcOperations().queryForObject(sqlQuery, (rs, rowNum) -> makeFilm(rs), id);
         } catch (DataAccessException exp) {
+            System.out.println("it was thrown");
+            System.out.println(exp.getMessage());
             return Optional.empty();
         }
 
@@ -156,7 +158,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void deleteLike(Film film, User user) {
 
-        String sqlQueryForLikes = "DELETE FROM likes WHERE film_id = :filmId, viewer_id = :userId";
+        String sqlQueryForLikes = "DELETE FROM likes WHERE film_id = :filmId AND viewer_id = :userId";
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("filmId", film.getId())
                 .addValue("userId", user.getId());
@@ -179,7 +181,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {
-
+        Mpa mpa = Mpa.builder().id(rs.getInt("rating_MPA_id")).build();
         return Film.builder()
                 .id(rs.getInt("film_id"))
                 .name(rs.getString("film_name"))
@@ -187,7 +189,7 @@ public class FilmDbStorage implements FilmStorage {
                 .releaseDate(rs.getDate("release_date").toLocalDate())
                 .duration(rs.getInt("duration_in_minutes"))
                 .rate(rs.getInt("likes_count"))
-                .mpa(Mpa.builder().id(rs.getInt("rating_mpa_id")).build())
+                .mpa(mpa)
                 .build();
     }
 
@@ -197,16 +199,16 @@ public class FilmDbStorage implements FilmStorage {
                 .map(Genre::getId)
                 .collect(Collectors.toSet());
 
-        StringBuilder sb = new StringBuilder("INSERT INTO film_genre(film_id, genre_id) ");
+        StringBuilder sb = new StringBuilder("INSERT INTO film_genre(film_id, genre_id) VALUES ");
         MapSqlParameterSource genreParams = new MapSqlParameterSource();
-        genreParams.addValue("film_id", film.getId());
         int counter = 0;
         for (int genreId : uniqueGenreIds) {
-            sb.append("VALUES (:film_id, :genre_id").append(counter).append("),");
+            sb.append("(:film_id, :genre_id").append(counter).append("), ");
+            genreParams.addValue("film_id", film.getId());
             genreParams.addValue("genre_id" + counter, genreId);
             counter++;
         }
-        sb.deleteCharAt(sb.length() - 1);
+        sb.deleteCharAt(sb.length() - 2);
         operations.update(sb.toString(), genreParams);
     }
 }

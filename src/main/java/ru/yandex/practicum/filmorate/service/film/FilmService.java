@@ -112,6 +112,13 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(Integer count) {
-        return filmStorage.getPopularFilms(count);
+        List<Film> films = filmStorage.getPopularFilms(count);
+        for (Film film : films) {
+            film.setGenres(genreStorage.getAllGenresForFilm(film.getId()));
+            Mpa filmMpa = mpaStorage.getMpaById(film.getMpa().getId())
+                    .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
+            film.setMpa(filmMpa);
+        }
+        return films;
     }
 }

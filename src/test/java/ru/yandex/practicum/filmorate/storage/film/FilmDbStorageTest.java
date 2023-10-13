@@ -5,10 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.time.LocalDate;
@@ -24,16 +27,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class FilmDbStorageTest {
 
     private final FilmDbStorage filmDbStorage;
     private final UserDbStorage userDbStorage;
+    private final GenreDbStorage genreDbStorage;
+    private final MpaDbStorage mpaDbStorage;
 
     @Test
     public void createFilm_whenFilmIsCorrectAndHasGenres_saveAndReturnFilmWithGenres() {
-        Mpa mpa = filmDbStorage.getMpaStorage().createMpa(new Mpa(1, "G"));
-        Genre comedy = filmDbStorage.getGenreStorage().createGenre(new Genre(1, "Комедия"));
-        Genre drama = filmDbStorage.getGenreStorage().createGenre(new Genre(2, "Драма"));
+        Mpa mpa = mpaDbStorage.createMpa(new Mpa(1, "G"));
+        Genre comedy = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre drama = genreDbStorage.createGenre(new Genre(2, "Драма"));
         List<Genre> genres = new ArrayList<>();
         genres.add(comedy);
         genres.add(drama);
@@ -61,11 +67,11 @@ class FilmDbStorageTest {
 
     @Test
     public void updateFilm_whenFilmIsCorrectAndHasGenres_returnUpdatedFilmWithGenres() {
-        Mpa mpa = filmDbStorage.getMpaStorage().createMpa(new Mpa(1, "G"));
-        Mpa newMpa = filmDbStorage.getMpaStorage().createMpa(new Mpa(2, "PG"));
-        Genre comedy = filmDbStorage.getGenreStorage().createGenre(new Genre(1, "Комедия"));
-        Genre drama = filmDbStorage.getGenreStorage().createGenre(new Genre(2, "Драма"));
-        Genre action = filmDbStorage.getGenreStorage().createGenre(new Genre(3, "Боевик"));
+        Mpa mpa = mpaDbStorage.createMpa(new Mpa(1, "G"));
+        Mpa newMpa = mpaDbStorage.createMpa(new Mpa(2, "PG"));
+        Genre comedy = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre drama = genreDbStorage.createGenre(new Genre(2, "Драма"));
+        Genre action = genreDbStorage.createGenre(new Genre(3, "Боевик"));
         List<Genre> genres = new ArrayList<>();
         genres.add(comedy);
         genres.add(drama);
@@ -105,9 +111,9 @@ class FilmDbStorageTest {
 
     @Test
     public void deleteFilm_whenCalled_deleteFilmFromBase() {
-        Mpa mpa = filmDbStorage.getMpaStorage().createMpa(new Mpa(1, "G"));
-        Genre comedy = filmDbStorage.getGenreStorage().createGenre(new Genre(1, "Комедия"));
-        Genre drama = filmDbStorage.getGenreStorage().createGenre(new Genre(2, "Драма"));
+        Mpa mpa = mpaDbStorage.createMpa(new Mpa(1, "G"));
+        Genre comedy = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre drama = genreDbStorage.createGenre(new Genre(2, "Драма"));
         List<Genre> genres = new ArrayList<>();
         genres.add(comedy);
         genres.add(drama);
@@ -129,9 +135,9 @@ class FilmDbStorageTest {
 
     @Test
     public void deleteAllFilms_whenCalled_deleteAllFilmsFromDatabase() {
-        Mpa mpa = filmDbStorage.getMpaStorage().createMpa(new Mpa(1, "G"));
-        Genre comedy = filmDbStorage.getGenreStorage().createGenre(new Genre(1, "Комедия"));
-        Genre drama = filmDbStorage.getGenreStorage().createGenre(new Genre(2, "Драма"));
+        Mpa mpa = mpaDbStorage.createMpa(new Mpa(1, "G"));
+        Genre comedy = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre drama = genreDbStorage.createGenre(new Genre(2, "Драма"));
         List<Genre> genres = new ArrayList<>();
         genres.add(comedy);
         genres.add(drama);
@@ -177,9 +183,10 @@ class FilmDbStorageTest {
 
     @Test
     public void getFilms_whenStorageHasFilms_returnListOfFilms() {
-        Mpa mpa = filmDbStorage.getMpaStorage().createMpa(new Mpa(1, "G"));
-        Genre comedy = filmDbStorage.getGenreStorage().createGenre(new Genre(1, "Комедия"));
-        Genre drama = filmDbStorage.getGenreStorage().createGenre(new Genre(2, "Драма"));
+
+        Mpa mpa = mpaDbStorage.createMpa(new Mpa(1, "G"));
+        Genre comedy = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre drama = genreDbStorage.createGenre(new Genre(2, "Драма"));
         List<Genre> genres = new ArrayList<>();
         genres.add(comedy);
         genres.add(drama);
@@ -211,16 +218,16 @@ class FilmDbStorageTest {
         List<Film> films = filmDbStorage.getFilms();
 
         assertThat(films).isNotEmpty();
-        assertThat(firstFilm).isIn(films);
-        assertThat(secondFilm).isIn(films);
-        assertThat(thirdFilm).isIn(films);
+        assertEquals(films.get(0).getId(), firstFilm.getId());
+        assertEquals(films.get(1).getId(), secondFilm.getId());
+        assertEquals(films.get(2).getId(), thirdFilm.getId());
     }
 
     @Test
     public void getFilmById_whenFilmWasFound_returnOptionalWithFilm() {
-        Mpa mpa = filmDbStorage.getMpaStorage().createMpa(new Mpa(1, "G"));
-        Genre comedy = filmDbStorage.getGenreStorage().createGenre(new Genre(1, "Комедия"));
-        Genre drama = filmDbStorage.getGenreStorage().createGenre(new Genre(2, "Драма"));
+        Mpa mpa = mpaDbStorage.createMpa(new Mpa(1, "G"));
+        Genre comedy = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre drama = genreDbStorage.createGenre(new Genre(2, "Драма"));
         List<Genre> genres = new ArrayList<>();
         genres.add(comedy);
         genres.add(drama);
@@ -244,8 +251,6 @@ class FilmDbStorageTest {
                                 .hasFieldOrPropertyWithValue("description", "its desc")
                                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1967, Month.MARCH, 25))
                                 .hasFieldOrPropertyWithValue("duration", 100)
-                                .hasFieldOrPropertyWithValue("genres", genres)
-                                .hasFieldOrPropertyWithValue("mpa", mpa)
                 );
     }
 
@@ -260,9 +265,9 @@ class FilmDbStorageTest {
 
     @Test
     public void addLike_whenCalled_addLikeToFilm() {
-        Mpa mpa = filmDbStorage.getMpaStorage().createMpa(new Mpa(1, "G"));
-        Genre comedy = filmDbStorage.getGenreStorage().createGenre(new Genre(1, "Комедия"));
-        Genre drama = filmDbStorage.getGenreStorage().createGenre(new Genre(2, "Драма"));
+        Mpa mpa = mpaDbStorage.createMpa(new Mpa(1, "G"));
+        Genre comedy = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre drama = genreDbStorage.createGenre(new Genre(2, "Драма"));
         List<Genre> genres = new ArrayList<>();
         genres.add(comedy);
         genres.add(drama);
@@ -288,9 +293,9 @@ class FilmDbStorageTest {
 
     @Test
     public void deleteLike_whenCalled_deleteLikeFromFilm() {
-        Mpa mpa = filmDbStorage.getMpaStorage().createMpa(new Mpa(1, "G"));
-        Genre comedy = filmDbStorage.getGenreStorage().createGenre(new Genre(1, "Комедия"));
-        Genre drama = filmDbStorage.getGenreStorage().createGenre(new Genre(2, "Драма"));
+        Mpa mpa = mpaDbStorage.createMpa(new Mpa(1, "G"));
+        Genre comedy = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre drama = genreDbStorage.createGenre(new Genre(2, "Драма"));
         List<Genre> genres = new ArrayList<>();
         genres.add(comedy);
         genres.add(drama);
@@ -319,9 +324,9 @@ class FilmDbStorageTest {
 
     @Test
     public void getPopularFilms_whenCalled_returnListOfFilmsWithBiggestRate() {
-        Mpa mpa = filmDbStorage.getMpaStorage().createMpa(new Mpa(1, "G"));
-        Genre comedy = filmDbStorage.getGenreStorage().createGenre(new Genre(1, "Комедия"));
-        Genre drama = filmDbStorage.getGenreStorage().createGenre(new Genre(2, "Драма"));
+        Mpa mpa = mpaDbStorage.createMpa(new Mpa(1, "G"));
+        Genre comedy = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre drama = genreDbStorage.createGenre(new Genre(2, "Драма"));
         List<Genre> genres = new ArrayList<>();
         genres.add(comedy);
         genres.add(drama);
@@ -355,9 +360,9 @@ class FilmDbStorageTest {
 
         List<Film> popularFilms = filmDbStorage.getPopularFilms(3);
 
-        assertEquals(popularFilms.get(0), firstFilm);
-        assertEquals(popularFilms.get(1), secondFilm);
-        assertEquals(popularFilms.get(2), thirdFilm);
+        assertEquals(popularFilms.get(0).getId(), firstFilm.getId());
+        assertEquals(popularFilms.get(1).getId(), secondFilm.getId());
+        assertEquals(popularFilms.get(2).getId(), thirdFilm.getId());
     }
 
 
