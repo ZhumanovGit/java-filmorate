@@ -8,6 +8,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.ValidateService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -24,12 +26,16 @@ class FilmServiceTest {
     FilmStorage storage;
     UserStorage userStorage;
     FilmService filmService;
+    GenreStorage genreStorage;
+    MpaStorage mpaStorage;
 
     @BeforeEach
     public void beforeEach() {
         storage = mock(FilmStorage.class);
         userStorage = mock(UserStorage.class);
-        filmService = new FilmService(storage, userStorage, new ValidateService());
+        genreStorage = mock(GenreStorage.class);
+        mpaStorage = mock(MpaStorage.class);
+        filmService = new FilmService(storage, userStorage, new ValidateService(), genreStorage, mpaStorage);
     }
 
     void assertEqualsFilm(Film o1, Film o2) {
