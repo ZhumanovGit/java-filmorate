@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.ValidateService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -48,25 +50,34 @@ class FilmServiceTest {
 
     @Test
     public void getFilms_whenCalled_thenReturnedListOfFilms() {
+        Mpa mpa = new Mpa(1, "test");
         Film film = Film.builder()
                 .id(1)
                 .name("testFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(mpa)
                 .build();
         Film secondFilm = Film.builder()
+                .id(2)
                 .name("secondFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2001, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(mpa)
                 .build();
         Film thirdFilm = Film.builder()
+                .id(3)
                 .name("thirdFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2002, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(mpa)
                 .build();
+        when(mpaStorage.getMpaById(film.getMpa().getId())).thenReturn(Optional.of(mpa));
+        when(mpaStorage.getMpaById(secondFilm.getMpa().getId())).thenReturn(Optional.of(mpa));
+        when(mpaStorage.getMpaById(thirdFilm.getMpa().getId())).thenReturn(Optional.of(mpa));
         when(storage.getFilms()).thenReturn(List.of(film, secondFilm, thirdFilm));
         List<Film> expectedFilms = List.of(film, secondFilm, thirdFilm);
 
@@ -88,13 +99,16 @@ class FilmServiceTest {
 
     @Test
     public void getFilmById_whenFilmWasFound_thenReturnedFilm() {
+        Mpa mpa = new Mpa(1, "test");
         Film film = Film.builder()
                 .id(1)
                 .name("testFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(mpa)
                 .build();
+        when(mpaStorage.getMpaById(film.getMpa().getId())).thenReturn(Optional.of(mpa));
         when(storage.getFilmById(film.getId())).thenReturn(Optional.of(film));
 
         Film actualFilm = filmService.getFilmById(1);
@@ -120,6 +134,7 @@ class FilmServiceTest {
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(new Mpa(1, "test"))
                 .build();
         when(storage.createFilm(film)).thenReturn(film);
 
@@ -151,6 +166,7 @@ class FilmServiceTest {
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(new Mpa(1, "test"))
                 .build();
         User user = User.builder()
                 .id(1)
@@ -176,6 +192,7 @@ class FilmServiceTest {
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(new Mpa(1, "test"))
                 .build();
         User user = User.builder()
                 .id(1)
@@ -206,25 +223,38 @@ class FilmServiceTest {
 
     @Test
     public void getPopularFilms_whenFilmsIsNotEmpty_thenReturnedEmptyList() {
+        Mpa mpa = new Mpa(1, "test");
+        Genre genre = new Genre(1, "testGenre");
         Film film = Film.builder()
                 .id(1)
                 .name("testFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(mpa)
                 .build();
         Film secondFilm = Film.builder()
+                .id(2)
                 .name("secondFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2001, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(mpa)
                 .build();
         Film thirdFilm = Film.builder()
+                .id(3)
                 .name("thirdFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2002, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(mpa)
                 .build();
+        when(genreStorage.getAllGenresForFilm(film.getId())).thenReturn(List.of(genre));
+        when(genreStorage.getAllGenresForFilm(secondFilm.getId())).thenReturn(List.of(genre));
+        when(genreStorage.getAllGenresForFilm(thirdFilm.getId())).thenReturn(List.of(genre));
+        when(mpaStorage.getMpaById(film.getMpa().getId())).thenReturn(Optional.of(mpa));
+        when(mpaStorage.getMpaById(secondFilm.getMpa().getId())).thenReturn(Optional.of(mpa));
+        when(mpaStorage.getMpaById(thirdFilm.getMpa().getId())).thenReturn(Optional.of(mpa));
         when(storage.getPopularFilms(3)).thenReturn(List.of(film, secondFilm, thirdFilm));
         List<Film> expectedList = new ArrayList<>(List.of(film, secondFilm, thirdFilm));
 
