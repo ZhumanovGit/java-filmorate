@@ -43,6 +43,11 @@ public class ValidateService {
             log.warn("ValidationException, отрицательная продолжительность фильма");
             throw new ValidateException("Продолжительность не может быть отрицательной");
         }
+
+        if (film.getMpa() == null) {
+            log.warn("ValidationException, фильм не имеет возрастного рейтинга");
+            throw new ValidateException("Возратной рейтинг не указан");
+        }
     }
 
     public void validateUpdateFilm(Film film) {
