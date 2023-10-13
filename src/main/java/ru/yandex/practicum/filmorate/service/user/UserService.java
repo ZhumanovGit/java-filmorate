@@ -109,8 +109,12 @@ public class UserService {
             return Collections.emptyList();
         }
 
+        List<Integer> friendsListIds = friendList.stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+
         return userList.stream()
-                .filter(friendList::contains)
+                .filter(item -> friendsListIds.contains(item.getId()))
                 .collect(Collectors.toList());
     }
 }

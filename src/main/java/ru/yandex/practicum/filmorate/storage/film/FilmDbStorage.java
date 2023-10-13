@@ -130,8 +130,6 @@ public class FilmDbStorage implements FilmStorage {
                     "WHERE film_id = ?;";
             film = operations.getJdbcOperations().queryForObject(sqlQuery, (rs, rowNum) -> makeFilm(rs), id);
         } catch (DataAccessException exp) {
-            System.out.println("it was thrown");
-            System.out.println(exp.getMessage());
             return Optional.empty();
         }
 
@@ -145,13 +143,16 @@ public class FilmDbStorage implements FilmStorage {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("filmId", film.getId())
                 .addValue("userId", user.getId());
-        operations.update(sqlQueryForLikes,params);
+        operations.update(sqlQueryForLikes, params);
 
         film.setRate(film.getRate() + 1);
-        String sqlQuery = "UPDATE films SET likes_count = (SELECT COUNT (viewer_id) FROM likes WHERE film_id = :filmId) " +
-                "WHERE film_id = :filmId";
-        SqlParameterSource filmId = new MapSqlParameterSource("filmId", film.getId());
-        operations.update(sqlQuery, filmId);
+        String sqlQuery = "UPDATE films SET " +
+                "likes_count = :rate " +
+                "WHERE film_id = :id";
+        MapSqlParameterSource rateParams = new MapSqlParameterSource();
+        params.addValue("filmId", film.getId())
+                .addValue("rate", film.getRate());
+        operations.update(sqlQuery, rateParams);
 
     }
 
@@ -162,13 +163,16 @@ public class FilmDbStorage implements FilmStorage {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("filmId", film.getId())
                 .addValue("userId", user.getId());
-        operations.update(sqlQueryForLikes,params);
+        operations.update(sqlQueryForLikes, params);
 
         film.setRate(film.getRate() - 1);
-        String sqlQuery = "UPDATE films SET likes_count = (SELECT COUNT (viewer_id) FROM likes WHERE film_id = :filmId) " +
-                "WHERE film_id = :filmId";
-        SqlParameterSource filmId = new MapSqlParameterSource("filmId", film.getId());
-        operations.update(sqlQuery, filmId);
+        String sqlQuery = "UPDATE films SET " +
+                "likes_count = :rate " +
+                "WHERE film_id = :id";
+        MapSqlParameterSource rateParams = new MapSqlParameterSource();
+        params.addValue("filmId", film.getId())
+                .addValue("rate", film.getRate());
+        operations.update(sqlQuery, rateParams);
     }
 
     @Override
