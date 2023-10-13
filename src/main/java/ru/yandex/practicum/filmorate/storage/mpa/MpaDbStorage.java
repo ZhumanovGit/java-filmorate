@@ -3,7 +3,12 @@ package ru.yandex.practicum.filmorate.storage.mpa;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
@@ -18,30 +23,39 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MpaDbStorage implements MpaStorage {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcOperations operations;
 
     @Override
     public Mpa createMpa(Mpa mpa) {
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("ratingMPA")
-                .usingGeneratedKeyColumns("id");
-        int mpaId = simpleJdbcInsert.executeAndReturnKey(toMap(mpa)).intValue();
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        String sqlQuery = "INSERT INTO ratingMPA (rating_name) VALUE (:name)";
+
+        SqlParameterSource mpaName = new MapSqlParameterSource("name", mpa.getName());
+
+        operations.update(sqlQuery, mpaName, keyHolder);
+
+        int mpaId = (int) keyHolder.getKey();
         mpa.setId(mpaId);
         return mpa;
     }
 
     @Override
     public void updateMpa(Mpa mpa) {
-        String sqlQuery = "UPDATE ratingMPA SET rating_name = ? WHERE id = ?";
-        jdbcTemplate.update(sqlQuery, mpa.getName(), mpa.getId());
+        String sqlQuery = "UPDATE ratingMPA SET rating_name = :name WHERE id = :id";
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("name", mpa.getName())
+                .addValue("id", mpa.getId());
+        operations.update(sqlQuery, params);
     }
 
     @Override
     public Optional<Mpa> getMpaById(int id) {
         Mpa mpa;
         try {
-            String sqlQuery = "SELECT * FROM ratingMPA WHERE id = ?";
-            mpa = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeMpa(rs), id);
+            String sqlQuery = "SELECT * FROM ratingMPA WHERE id = :id";
+            SqlParameterSource mpaId = new MapSqlParameterSource("id", id);
+            mpa = operations.query(sqlQuery, mpaId, this::makeMpa);
         } catch (DataAccessException exp) {
             return Optional.empty();
         }
@@ -51,19 +65,20 @@ public class MpaDbStorage implements MpaStorage {
     @Override
     public List<Mpa> getAll() {
         String sqlQuery = "SELECT * FROM ratingMPA";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeMpa(rs));
+        return operations.query(sqlQuery, (rs, rowNum) -> makeMpa(rs));
     }
 
     @Override
     public void deleteAllMpa() {
         String sqlQuery = "DELETE FROM ratingMPA";
-        jdbcTemplate.update(sqlQuery);
+        operations.getJdbcOperations().update(sqlQuery);
     }
 
     @Override
     public void deleteMpaById(int id) {
-        String sqlQuery = "DELETE FROM ratingMPA WHERE id = ?";
-        jdbcTemplate.update(sqlQuery, id);
+        String sqlQuery = "DELETE FROM ratingMPA WHERE id = :id";
+        SqlParameterSource mpaId = new MapSqlParameterSource("id", id);
+        operations.update(sqlQuery, mpaId);
     }
 
     private Mpa makeMpa(ResultSet rs) throws SQLException {
@@ -71,12 +86,5 @@ public class MpaDbStorage implements MpaStorage {
                 .id(rs.getInt("id"))
                 .name(rs.getString("rating_name"))
                 .build();
-    }
-
-    private Map<String, Object> toMap(Mpa mpa) {
-        Map<String, Object> values = new HashMap<>();
-        values.put("rating_name", mpa.getName());
-
-        return values;
     }
 }

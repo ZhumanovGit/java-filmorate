@@ -3,7 +3,12 @@ package ru.yandex.practicum.filmorate.storage.genre;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -15,31 +20,40 @@ import java.util.*;
 @RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcOperations operations;
 
     @Override
     public Genre createGenre(Genre genre) {
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("genre")
-                .usingGeneratedKeyColumns("id");
-        int genreId = simpleJdbcInsert.executeAndReturnKey(toMap(genre)).intValue();
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        String sqlQuery = "INSERT INTO genre (name) VALUE (:name)";
+
+        SqlParameterSource mpaName = new MapSqlParameterSource("name", genre.getName());
+
+        operations.update(sqlQuery, mpaName, keyHolder);
+
+        int genreId = (int) keyHolder.getKey();
         genre.setId(genreId);
         return genre;
     }
 
     @Override
     public void updateGenre(Genre genre) {
-        String sqlQuery = "UPDATE genre SET name  = ? WHERE id = ?";
+        String sqlQuery = "UPDATE genre SET name  = :name WHERE id = :id";
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("name", genre.getName())
+                .addValue("id", genre.getId());
 
-        jdbcTemplate.update(sqlQuery, genre.getName(), genre.getId());
+        operations.update(sqlQuery, params);
     }
 
     @Override
     public Optional<Genre> getGenreById(int id) {
         Genre genre;
         try {
-            String sqlQuery = "SELECT * FROM genre WHERE id = ?";
-            genre = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeGenre(rs), id);
+            String sqlQuery = "SELECT * FROM genre WHERE id = :id";
+            SqlParameterSource genreId = new MapSqlParameterSource("id", id);
+            genre = operations.query(sqlQuery, genreId, this::makeGenre);
         } catch (DataAccessException exp) {
             return Optional.empty();
         }
@@ -50,30 +64,32 @@ public class GenreDbStorage implements GenreStorage {
     public List<Genre> getAll() {
         String sqlQuery = "SELECT * FROM genre";
 
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenre(rs));
+        return operations.query(sqlQuery, (rs, rowNum) -> makeGenre(rs));
     }
 
     @Override
     public void deleteAllGenres() {
         String sqlQuery = "DELETE FROM genre";
-        jdbcTemplate.update(sqlQuery);
+        operations.getJdbcOperations().update(sqlQuery);
     }
 
     @Override
     public void deleteGenreById(int id) {
-        String sqlQuery = "DELETE FROM genre WHERE id = ?";
-        jdbcTemplate.update(sqlQuery, id);
+        String sqlQuery = "DELETE FROM genre WHERE id = :id";
+        SqlParameterSource genreId = new MapSqlParameterSource("id", id);
+        operations.update(sqlQuery, genreId);
     }
 
     @Override
     public List<Genre> getAllGenresForFilm(int filmId) {
         String sqlQuery = "SELECT g.id, g.name FROM film_genre AS fg " +
                 "                JOIN genre AS g ON fg.genre_id = g.id " +
-                "                WHERE fg.film_id = ?;";
+                "                WHERE fg.film_id = :filmId;";
         List<Genre> filmGenres;
         try {
-            filmGenres = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenre(rs), filmId);
-        } catch (NullPointerException e) {
+            SqlParameterSource needId = new MapSqlParameterSource("filmId", filmId);
+            filmGenres = operations.query(sqlQuery, needId, (rs, rowNum) -> makeGenre(rs));
+        } catch (DataAccessException e) {
             return new ArrayList<>();
         }
 
@@ -85,12 +101,5 @@ public class GenreDbStorage implements GenreStorage {
                 .id(rs.getInt("id"))
                 .name(rs.getString("name"))
                 .build();
-    }
-
-    private Map<String, Object> toMap(Genre genre) {
-        Map<String, Object> values = new HashMap<>();
-        values.put("name", genre.getName());
-
-        return values;
     }
 }

@@ -2,18 +2,18 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,59 +21,78 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcOperations operations;
 
     @Override
     public User createUser(User user) {
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("viewers")
-                .usingGeneratedKeyColumns("viewer_id");
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        int userId = simpleJdbcInsert.executeAndReturnKey(toMap(user)).intValue();
+        String sqlQuery = "INSERT INTO viewers " +
+                "(email, login, viewer_name, birthday) " +
+                "VALUE (:email, :login, :name, :birthday)";
+
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+        params.addValue("name", user.getName())
+                .addValue("email", user.getEmail())
+                .addValue("login", user.getLogin())
+                .addValue("birthday", user.getBirthday());
+
+        operations.update(sqlQuery, params, keyHolder);
+
+        int userId = (int) keyHolder.getKey();
         user.setId(userId);
         return user;
     }
 
     @Override
     public void updateUser(User user) {
-        String sqlQuery = "UPDATE viewers SET email = ?, login = ?, viewer_name = ?, birthday = ?" +
-                "WHERE viewer_id = ?";
-        jdbcTemplate.update(sqlQuery,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday(),
-                user.getId());
+        String sqlQuery = "UPDATE viewers SET email = :email, login = :login, viewer_name = :name, birthday = :birthday" +
+                "WHERE viewer_id = :id";
+
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+        params.addValue("id", user.getId())
+                .addValue("name", user.getName())
+                .addValue("email", user.getEmail())
+                .addValue("birthday", user.getBirthday())
+                .addValue("login", user.getLogin());
+
+        operations.update(sqlQuery, params);
     }
 
     @Override
     public void deleteUser(int id) {
+        String sqlQueryForFriendship = "DELETE FROM friendships WHERE viewer_id = :id OR friend_id = :id";
+        SqlParameterSource needId = new MapSqlParameterSource("id", id);
+        operations.update(sqlQueryForFriendship, needId);
+
         String sqlQuery = "DELETE FROM viewers WHERE viewer_id = ?";
-        jdbcTemplate.update(sqlQuery, id);
-        String sqlQueryForFriendship = "DELETE FROM friendships WHERE viewer_id = ? OR friend_id = ?";
-        jdbcTemplate.update(sqlQueryForFriendship, id, id);
+        operations.update(sqlQuery, needId);
+
 
     }
 
     @Override
     public void deleteAllUsers() {
-        jdbcTemplate.update("DELETE FROM viewers");
+        operations.getJdbcOperations().update("DELETE FROM friendships");
 
-        jdbcTemplate.update("DELETE FROM friendships");
+        operations.getJdbcOperations().update("DELETE FROM viewers");
     }
 
     @Override
     public List<User> getAllUsers() {
         String sql = "SELECT * FROM viewers";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
+        return operations.query(sql, (rs, rowNum) -> makeUser(rs));
     }
 
     @Override
     public Optional<User> getUserById(int id) {
         User user;
         try {
-            String sqlQuery = "SELECT * FROM viewers WHERE viewer_id = ?";
-            user = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeUser(rs), id);
+            String sqlQuery = "SELECT * FROM viewers WHERE viewer_id = :id";
+            SqlParameterSource userId = new MapSqlParameterSource("id", id);
+            user = operations.query(sqlQuery, userId, this::makeUser);
         } catch (DataAccessException exp) {
             return Optional.empty();
         }
@@ -84,24 +103,30 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void addFriend(User user, User friend) {
         String sqlQuery = "INSERT INTO friendships (viewer_id, friend_id)" +
-                "VALUES (?, ?)";
-        jdbcTemplate.update(sqlQuery, user.getId(), friend.getId());
+                "VALUES (:userId, :friendId)";
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("userId", user.getId())
+                .addValue("friendId", friend.getId());
+        operations.update(sqlQuery, params);
     }
 
     @Override
     public void deleteFriend(User user, User friend) {
-        String sqlQuery = "DELETE FROM friendships WHERE viewer_id = ? AND friend_id = ?";
-
-        jdbcTemplate.update(sqlQuery, user.getId(), friend.getId());
+        String sqlQuery = "DELETE FROM friendships WHERE viewer_id = :userId AND friend_id = :friendId";
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("userId", user.getId())
+                .addValue("friendId", friend.getId());
+        operations.update(sqlQuery, params);
     }
 
     @Override
     public List<Integer> getUserFriends(int id) {
-        String sqlQuery = "SELECT * FROM friendships WHERE viewer_id = ?";
-        List<Friendship> friendships = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFriendship(rs), id);
+        String sqlQuery = "SELECT * FROM friendships WHERE viewer_id = :id";
+        SqlParameterSource userId = new MapSqlParameterSource("id", id);
+        List<List<User>> friendships = operations.query(sqlQuery, userId, (rs, rowNum) -> makeFriendship(rs));
 
         return friendships.stream()
-                .map(Friendship::getFriend)
+                .map(item -> item.get(1))
                 .map(User::getId)
                 .collect(Collectors.toList());
     }
@@ -116,24 +141,14 @@ public class UserDbStorage implements UserStorage {
                 .build();
     }
 
-    private Friendship makeFriendship(ResultSet rs) throws SQLException {
-        Optional<User> user = getUserById(rs.getInt("viewer_id"));
-        Optional<User> friend = getUserById(rs.getInt("friend_id"));
+    private List<User> makeFriendship(ResultSet rs) throws SQLException {
+        List<User> friendship = new ArrayList<>();
+        User user = getUserById(rs.getInt("viewer_id")).get();
+        User friend = getUserById(rs.getInt("friend_id")).get();
 
-        if (user.isEmpty() || friend.isEmpty()) {
-            throw new NotFoundException("Пользователь не найден");
-        }
+        friendship.add(user);
+        friendship.add(friend);
 
-        return new Friendship(user.get(), friend.get());
-    }
-
-    private Map<String, Object> toMap(User user) {
-        Map<String, Object> values = new HashMap<>();
-        values.put("email", user.getEmail());
-        values.put("login", user.getLogin());
-        values.put("viewer_name", user.getName());
-        values.put("birthday", user.getBirthday());
-
-        return values;
+        return friendship;
     }
 }
