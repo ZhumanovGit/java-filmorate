@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -82,6 +83,7 @@ class MpaDbStorageTest {
 
     @Test
     public void getAll_whenStorageHasMpa_thanReturnListOfMpa() {
+        mpaDbStorage.deleteAllMpa();
         Mpa firstMpa = mpaDbStorage.createMpa(Mpa.builder().name("G").build());
         Mpa secondMpa = mpaDbStorage.createMpa(Mpa.builder().name("PG").build());
         Mpa thirdMpa = mpaDbStorage.createMpa(Mpa.builder().name("PG-13").build());
@@ -89,9 +91,9 @@ class MpaDbStorageTest {
         List<Mpa> mpas = mpaDbStorage.getAll();
 
         assertThat(mpas).isNotEmpty();
-        assertThat(firstMpa).isIn(mpas);
-        assertThat(secondMpa).isIn(mpas);
-        assertThat(thirdMpa).isIn(mpas);
+        assertEquals(mpas.get(0).getId(), firstMpa.getId());
+        assertEquals(mpas.get(1).getId(), secondMpa.getId());
+        assertEquals(mpas.get(2).getId(), thirdMpa.getId());
     }
 
     @Test

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -15,7 +14,6 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -124,7 +122,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<Integer> getUserFriends(int id) {
         String sqlQuery = "SELECT * FROM friendships WHERE viewer_id = ?";
-        List<FriendShip> friendShips =  operations.getJdbcOperations().query(sqlQuery, (rs,rowNum) -> makeFriendship(rs), id);
+        List<FriendShip> friendShips = operations.getJdbcOperations().query(sqlQuery, (rs, rowNum) -> makeFriendship(rs), id);
 
         return friendShips.stream()
                 .map(FriendShip::getFriend)

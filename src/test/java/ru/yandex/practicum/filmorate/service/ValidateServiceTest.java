@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.ValidateService;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -21,6 +21,7 @@ class ValidateServiceTest {
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(new Mpa(1, "test"))
                 .build();
 
         assertDoesNotThrow(() -> service.validateCreateFilm(film));
@@ -125,6 +126,7 @@ class ValidateServiceTest {
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(new Mpa(1, "test"))
                 .build();
 
         assertDoesNotThrow(() -> service.validateUpdateFilm(film));
@@ -137,11 +139,26 @@ class ValidateServiceTest {
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
+                .mpa(new Mpa(1, "test"))
                 .build();
 
         Throwable throwable = assertThrows(ValidateException.class, () -> service.validateUpdateFilm(film));
         assertEquals("Не найден id для PUT запроса", throwable.getMessage());
     }
+
+    @Test
+    public void shouldThrowExceptionIfFilmHasNoMpa() {
+        Film film = Film.builder()
+                .name("testFilm")
+                .description("test desc for film")
+                .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
+                .duration(120)
+                .build();
+
+        Throwable throwable = assertThrows(ValidateException.class, () -> service.validateUpdateFilm(film));
+        assertEquals("Возраcтной рейтинг не указан", throwable.getMessage());
+    }
+
 
     @Test
     public void shouldCorrectlyValidateUserForCreate() {

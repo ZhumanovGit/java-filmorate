@@ -46,7 +46,7 @@ public class ValidateService {
 
         if (film.getMpa() == null) {
             log.warn("ValidationException, фильм не имеет возрастного рейтинга");
-            throw new ValidateException("Возратной рейтинг не указан");
+            throw new ValidateException("Возраcтной рейтинг не указан");
         }
     }
 

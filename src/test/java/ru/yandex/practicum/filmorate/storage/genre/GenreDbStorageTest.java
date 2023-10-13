@@ -138,6 +138,7 @@ class GenreDbStorageTest {
 
     @Test
     public void getAllGenresForFilm_whenFilmHasGenres_thanReturnListOfGenres() {
+        genreDbStorage.deleteAllGenres();
         Genre firstGenre = genreDbStorage.createGenre(new Genre(1, "Комедия"));
         Genre secondGenre = genreDbStorage.createGenre(new Genre(2, "Драма"));
         Mpa mpa = new Mpa(1, "G");
@@ -158,8 +159,8 @@ class GenreDbStorageTest {
         List<Genre> filmGenres = genreDbStorage.getAllGenresForFilm(filmId);
 
         assertThat(filmGenres).isNotEmpty();
-        assertThat(firstGenre).isIn(filmGenres);
-        assertThat(secondGenre).isIn(filmGenres);
+        assertEquals(filmGenres.get(0).getId(), firstGenre.getId());
+        assertEquals(filmGenres.get(1).getId(), secondGenre.getId());
     }
 
     @Test
