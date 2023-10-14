@@ -33,8 +33,8 @@ class FilmDbStorageTest {
     @Test
     public void createFilm_whenFilmIsCorrectAndHasGenres_saveAndReturnFilmWithGenres() {
         Mpa mpa = new Mpa(1, "G");
-        Genre comedy = new Genre(1, "Комедия");
-        Genre drama = new Genre(2, "Драма");
+        Genre comedy = Genre.builder().id(1).name("Комедия").build();
+        Genre drama = Genre.builder().id(2).name("Драма").build();
         Set<Genre> genres = new HashSet<>();
         genres.add(comedy);
         genres.add(drama);
@@ -64,9 +64,9 @@ class FilmDbStorageTest {
     public void updateFilm_whenFilmIsCorrectAndHasGenres_returnUpdatedFilmWithGenres() {
         Mpa mpa = new Mpa(1, "G");
         Mpa newMpa = new Mpa(2, "PG");
-        Genre comedy = new Genre(1, "Комедия");
-        Genre drama = new Genre(2, "Драма");
-        Genre action = new Genre(3, "Боевик");
+        Genre comedy = Genre.builder().id(1).name("Комедия").build();
+        Genre drama = Genre.builder().id(2).name("Драма").build();
+        Genre action = Genre.builder().id(3).name("Боевик").build();
         Set<Genre> genres = new HashSet<>();
         genres.add(comedy);
         genres.add(drama);
@@ -107,8 +107,8 @@ class FilmDbStorageTest {
     @Test
     public void deleteFilm_whenCalled_deleteFilmFromBase() {
         Mpa mpa = new Mpa(1, "G");
-        Genre comedy = new Genre(1, "Комедия");
-        Genre drama = new Genre(2, "Драма");
+        Genre comedy = Genre.builder().id(1).name("Комедия").build();
+        Genre drama = Genre.builder().id(2).name("Драма").build();
         Set<Genre> genres = new HashSet<>();
         genres.add(comedy);
         genres.add(drama);
@@ -131,8 +131,8 @@ class FilmDbStorageTest {
     @Test
     public void deleteAllFilms_whenCalled_deleteAllFilmsFromDatabase() {
         Mpa mpa = new Mpa(1, "G");
-        Genre comedy = new Genre(1, "Комедия");
-        Genre drama = new Genre(2, "Драма");
+        Genre comedy = Genre.builder().id(1).name("Комедия").build();
+        Genre drama = Genre.builder().id(2).name("Драма").build();
         Set<Genre> genres = new HashSet<>();
         genres.add(comedy);
         genres.add(drama);
@@ -180,8 +180,8 @@ class FilmDbStorageTest {
     public void getFilms_whenStorageHasFilms_returnListOfFilms() {
 
         Mpa mpa = new Mpa(1, "G");
-        Genre comedy = new Genre(1, "Комедия");
-        Genre drama = new Genre(2, "Драма");
+        Genre comedy = Genre.builder().id(1).name("Комедия").build();
+        Genre drama = Genre.builder().id(2).name("Драма").build();
         Set<Genre> genres = new HashSet<>();
         genres.add(comedy);
         genres.add(drama);
@@ -221,8 +221,8 @@ class FilmDbStorageTest {
     @Test
     public void getFilmById_whenFilmWasFound_returnOptionalWithFilm() {
         Mpa mpa = new Mpa(1, "G");
-        Genre comedy = new Genre(1, "Комедия");
-        Genre drama = new Genre(2, "Драма");
+        Genre comedy = Genre.builder().id(1).name("Комедия").build();
+        Genre drama = Genre.builder().id(2).name("Драма").build();
         Set<Genre> genres = new HashSet<>();
         genres.add(comedy);
         genres.add(drama);
@@ -261,8 +261,8 @@ class FilmDbStorageTest {
     @Test
     public void addLike_whenCalled_addLikeToFilm() {
         Mpa mpa = new Mpa(1, "G");
-        Genre comedy = new Genre(1, "Комедия");
-        Genre drama = new Genre(2, "Драма");
+        Genre comedy = Genre.builder().id(1).name("Комедия").build();
+        Genre drama = Genre.builder().id(2).name("Драма").build();
         Set<Genre> genres = new HashSet<>();
         genres.add(comedy);
         genres.add(drama);
@@ -289,8 +289,8 @@ class FilmDbStorageTest {
     @Test
     public void deleteLike_whenCalled_deleteLikeFromFilm() {
         Mpa mpa = new Mpa(1, "G");
-        Genre comedy = new Genre(1, "Комедия");
-        Genre drama = new Genre(2, "Драма");
+        Genre comedy = Genre.builder().id(1).name("Комедия").build();
+        Genre drama = Genre.builder().id(2).name("Драма").build();
         Set<Genre> genres = new HashSet<>();
         genres.add(comedy);
         genres.add(drama);
@@ -320,8 +320,8 @@ class FilmDbStorageTest {
     @Test
     public void getPopularFilms_whenCalled_returnListOfFilmsWithBiggestRate() {
         Mpa mpa = new Mpa(1, "G");
-        Genre comedy = new Genre(1, "Комедия");
-        Genre drama = new Genre(2, "Драма");
+        Genre comedy = Genre.builder().id(1).name("Комедия").build();
+        Genre drama = Genre.builder().id(2).name("Драма").build();
         Set<Genre> genres = new HashSet<>();
         genres.add(comedy);
         genres.add(drama);

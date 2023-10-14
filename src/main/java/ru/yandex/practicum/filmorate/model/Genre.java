@@ -11,14 +11,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Genre {
 
-    private int filmId;
     private int id;
+    private int filmId;
     private String name;
-
-    public Genre(int id, String name) {
-        this.id = id;
-        this.name = name;
-    }
 
     @Override
     public boolean equals(Object o) {

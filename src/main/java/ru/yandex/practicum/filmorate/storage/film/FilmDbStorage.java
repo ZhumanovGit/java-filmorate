@@ -144,6 +144,8 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Genre> filmGenres = operations.query(sqlQueryForGenres, needId, (rs, rowNum) -> makeGenre(rs));
 
+        System.out.println(filmGenres);
+
         film.setGenres(new HashSet<>(filmGenres));
 
         return Optional.of(film);
@@ -178,11 +180,25 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        String sqlQuery = "SELECT * FROM films " +
+        String sqlQuery = "SELECT * FROM films AS f " +
+                "JOIN ratingMPA AS r ON f.rating_MPA_id = r.id " +
                 "ORDER BY likes_count DESC " +
                 "LIMIT :limit";
         SqlParameterSource limit = new MapSqlParameterSource("limit", count);
-        return operations.query(sqlQuery, limit, (rs, rowNUm) -> makeFilm(rs));
+        List<Film> films = operations.query(sqlQuery, limit, (rs, rowNUm) -> makeFilm(rs));
+
+        String sqlQueryForGenres = "SELECT fg.film_id, g.id, g.name FROM film_genre AS fg " +
+                "JOIN genre AS g ON fg.genre_id = g.id ";
+
+        List<Genre> genres = operations.query(sqlQueryForGenres, (rs, rowNum) -> makeGenre(rs));
+
+        for (Film film : films) {
+            film.setGenres(genres.stream()
+                    .filter(genre -> genre.getFilmId() == film.getId())
+                    .collect(Collectors.toSet()));
+        }
+
+        return films;
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {
@@ -190,26 +206,30 @@ public class FilmDbStorage implements FilmStorage {
                 .id(rs.getInt("rating_MPA_id"))
                 .name(rs.getString("rating_name")).build();
 
-        return new Film(rs.getInt("film_id"),
-                rs.getString("film_name"),
-                rs.getString("description"),
-                rs.getDate("release_date").toLocalDate(),
-                rs.getInt("duration_in_minutes"),
-                rs.getInt("likes_count"),
-                mpa);
+        return Film.builder()
+                .id(rs.getInt("film_id"))
+                .name(rs.getString("film_name"))
+                .description(rs.getString("description"))
+                .releaseDate(rs.getDate("release_date").toLocalDate())
+                .duration(rs.getInt("duration_in_minutes"))
+                .rate(rs.getInt("likes_count"))
+                .genres(new HashSet<>())
+                .mpa(mpa)
+                .build();
+
     }
 
     private Genre makeGenre(ResultSet rs) throws SQLException {
         return Genre.builder()
                 .filmId(rs.getInt("film_id"))
                 .id(rs.getInt("id"))
-                .name("name")
+                .name(rs.getString("name"))
                 .build();
     }
 
     private void saveGenres(Film film) {
 
-        if (film.getGenres().isEmpty()) {
+        if (film.getGenres() == null || film.getGenres().isEmpty()) {
             return;
         }
         Set<Integer> uniqueGenreIds = film.getGenres().stream()

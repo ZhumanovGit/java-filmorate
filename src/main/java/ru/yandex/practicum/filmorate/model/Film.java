@@ -18,23 +18,8 @@ public class Film {
     private LocalDate releaseDate;
     private int duration;
     private int rate;
-    private Set<Genre> genres;
+    @Builder.Default
+    private Set<Genre> genres = new HashSet<>();
     private Mpa mpa;
-
-    public Film(Integer id,
-                String name,
-                String description,
-                LocalDate releaseDate,
-                int duration,
-                int rate,
-                Mpa mpa) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-        this.rate = rate;
-        this.genres = new HashSet<>();
-        this.mpa = mpa;
-    }
 }
+

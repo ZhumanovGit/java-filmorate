@@ -215,7 +215,7 @@ class FilmServiceTest {
     @Test
     public void getPopularFilms_whenFilmsIsNotEmpty_thenReturnedEmptyList() {
         Mpa mpa = new Mpa(1, "test");
-        Genre genre = new Genre(1, "testGenre");
+        Genre genre = new Genre(0, 1, "testGenre");
         Film film = Film.builder()
                 .id(1)
                 .name("testFilm")
