@@ -49,13 +49,15 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Optional<Genre> getGenreById(int id) {
-        Genre genre;
-        try {
-            String sqlQuery = "SELECT * FROM genre WHERE id = ?";
-            genre = operations.getJdbcOperations().queryForObject(sqlQuery, (rs, rowNum) -> makeGenre(rs), id);
-        } catch (DataAccessException exp) {
+
+        String sqlQuery = "SELECT * FROM genre WHERE id = ?";
+        List<Genre> genres = operations.getJdbcOperations().query(sqlQuery, (rs, rowNum) -> makeGenre(rs), id);
+
+        if (genres.isEmpty()) {
             return Optional.empty();
         }
+        Genre genre = genres.get(0);
+
         return Optional.of(genre);
     }
 
@@ -77,22 +79,6 @@ public class GenreDbStorage implements GenreStorage {
         String sqlQuery = "DELETE FROM genre WHERE id = :id";
         SqlParameterSource genreId = new MapSqlParameterSource("id", id);
         operations.update(sqlQuery, genreId);
-    }
-
-    @Override
-    public List<Genre> getAllGenresForFilm(int filmId) {
-        String sqlQuery = "SELECT g.id, g.name FROM film_genre AS fg " +
-                "                JOIN genre AS g ON fg.genre_id = g.id " +
-                "                WHERE fg.film_id = :filmId;";
-        List<Genre> filmGenres;
-        try {
-            SqlParameterSource needId = new MapSqlParameterSource("filmId", filmId);
-            filmGenres = operations.query(sqlQuery, needId, (rs, rowNum) -> makeGenre(rs));
-        } catch (DataAccessException e) {
-            return new ArrayList<>();
-        }
-
-        return filmGenres;
     }
 
     private Genre makeGenre(ResultSet rs) throws SQLException {

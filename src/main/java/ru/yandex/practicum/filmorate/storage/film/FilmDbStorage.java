@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -15,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -48,10 +48,6 @@ public class FilmDbStorage implements FilmStorage {
         int filmId = (int) keyHolder.getKey();
         film.setId(filmId);
 
-        if (film.getGenres().isEmpty()) {
-            return film;
-        }
-
         saveGenres(film);
 
         return film;
@@ -80,10 +76,6 @@ public class FilmDbStorage implements FilmStorage {
         SqlParameterSource filmId = new MapSqlParameterSource("id", film.getId());
         operations.update(sqlQueryForFilmGenres, filmId);
 
-        if (film.getGenres().isEmpty()) {
-            return;
-        }
-
         saveGenres(film);
     }
 
@@ -109,22 +101,50 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilms() {
         String sqlQuery = "SELECT * " +
-                "FROM films;";
+                "FROM films AS f " +
+                "JOIN ratingMPA AS r ON f.rating_MPA_id = r.id ";
 
-        return operations.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
+        List<Film> films = operations.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
+
+        String sqlQueryForGenres = "SELECT fg.film_id, g.id, g.name FROM film_genre AS fg " +
+                "JOIN genre AS g ON fg.genre_id = g.id ";
+
+        List<Genre> genres = operations.query(sqlQueryForGenres, (rs, rowNum) -> makeGenre(rs));
+
+        for (Film film : films) {
+            film.setGenres(genres.stream()
+                    .filter(genre -> genre.getFilmId() == film.getId())
+                    .collect(Collectors.toSet()));
+        }
+
+        return films;
     }
 
     @Override
     public Optional<Film> getFilmById(int id) {
-        Film film;
-        try {
-            String sqlQuery = "SELECT * " +
-                    "FROM films " +
-                    "WHERE film_id = ?;";
-            film = operations.getJdbcOperations().queryForObject(sqlQuery, (rs, rowNum) -> makeFilm(rs), id);
-        } catch (DataAccessException exp) {
+
+        String sqlQuery = "SELECT * " +
+                "FROM films AS f " +
+                "JOIN ratingMPA AS r ON f.rating_MPA_id = r.id " +
+                "WHERE film_id = ?;";
+        List<Film> films = operations.getJdbcOperations().query(sqlQuery, (rs, rowNum) -> makeFilm(rs), id);
+
+        if (films.isEmpty()) {
             return Optional.empty();
         }
+
+        Film film = films.get(0);
+
+        String sqlQueryForGenres = "SELECT fg.film_id, g.id, g.name FROM film_genre AS fg " +
+                "JOIN genre AS g ON fg.genre_id = g.id " +
+                "WHERE fg.film_id = :filmId;";
+
+
+        SqlParameterSource needId = new MapSqlParameterSource("filmId", id);
+
+        List<Genre> filmGenres = operations.query(sqlQueryForGenres, needId, (rs, rowNum) -> makeGenre(rs));
+
+        film.setGenres(new HashSet<>(filmGenres));
 
         return Optional.of(film);
     }
@@ -135,10 +155,10 @@ public class FilmDbStorage implements FilmStorage {
                 "VALUES (?, ?);";
         operations.getJdbcOperations().update(sqlQueryForLikes, film.getId(), user.getId());
 
-        film.setRate(film.getRate() + 1);
-        String sqlQuery = "UPDATE films SET likes_count = ?" +
+        String sqlQuery = "UPDATE films SET likes_count = (SELECT COUNT(viewer_id) FROM likes WHERE film_id = ?)" +
                 "WHERE film_id = ?";
-        operations.getJdbcOperations().update(sqlQuery, film.getRate(), film.getId());
+        int filmId = film.getId();
+        operations.getJdbcOperations().update(sqlQuery, filmId, filmId);
 
 
     }
@@ -148,10 +168,10 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQueryForLikes = "DELETE FROM likes WHERE film_id = ? AND viewer_id = ?";
         operations.getJdbcOperations().update(sqlQueryForLikes, film.getId(), user.getId());
 
-        film.setRate(film.getRate() - 1);
-        String sqlQuery = "UPDATE films SET likes_count = ?" +
+        String sqlQuery = "UPDATE films SET likes_count = (SELECT COUNT(viewer_id) FROM likes WHERE film_id = ?)" +
                 "WHERE film_id = ?";
-        operations.getJdbcOperations().update(sqlQuery, film.getRate(), film.getId());
+        int filmId = film.getId();
+        operations.getJdbcOperations().update(sqlQuery, filmId, filmId);
 
 
     }
@@ -166,20 +186,32 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {
-        Mpa mpa = Mpa.builder().id(rs.getInt("rating_MPA_id")).build();
-        return Film.builder()
-                .id(rs.getInt("film_id"))
-                .name(rs.getString("film_name"))
-                .description(rs.getString("description"))
-                .releaseDate(rs.getDate("release_date").toLocalDate())
-                .duration(rs.getInt("duration_in_minutes"))
-                .rate(rs.getInt("likes_count"))
-                .mpa(mpa)
+        Mpa mpa = Mpa.builder()
+                .id(rs.getInt("rating_MPA_id"))
+                .name(rs.getString("rating_name")).build();
+
+        return new Film(rs.getInt("film_id"),
+                rs.getString("film_name"),
+                rs.getString("description"),
+                rs.getDate("release_date").toLocalDate(),
+                rs.getInt("duration_in_minutes"),
+                rs.getInt("likes_count"),
+                mpa);
+    }
+
+    private Genre makeGenre(ResultSet rs) throws SQLException {
+        return Genre.builder()
+                .filmId(rs.getInt("film_id"))
+                .id(rs.getInt("id"))
+                .name("name")
                 .build();
     }
 
     private void saveGenres(Film film) {
 
+        if (film.getGenres().isEmpty()) {
+            return;
+        }
         Set<Integer> uniqueGenreIds = film.getGenres().stream()
                 .map(Genre::getId)
                 .collect(Collectors.toSet());

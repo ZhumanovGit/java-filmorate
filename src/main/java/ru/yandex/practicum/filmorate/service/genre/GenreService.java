@@ -35,12 +35,12 @@ public class GenreService {
     }
 
     public void updateGenre(Genre genre) {
-
-        storage.getGenreById(genre.getId())
-                .orElseThrow(() -> new NotFoundException("Такого жанра не существует"));
         if (genre.getName().isBlank()) {
             throw new ValidateException("Имя не может быть пустым");
         }
+        storage.getGenreById(genre.getId())
+                .orElseThrow(() -> new NotFoundException("Такого жанра не существует"));
+
         storage.updateGenre(genre);
     }
 

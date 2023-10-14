@@ -36,12 +36,12 @@ public class MpaService {
     }
 
     public void updateMpa(Mpa mpa) {
-
-        storage.getMpaById(mpa.getId())
-                .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
         if (mpa.getName().isBlank()) {
             throw new ValidateException("Имя не может быть пустым");
         }
+        storage.getMpaById(mpa.getId())
+                .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
+
         storage.updateMpa(mpa);
     }
 

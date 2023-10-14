@@ -28,16 +28,12 @@ class FilmServiceTest {
     FilmStorage storage;
     UserStorage userStorage;
     FilmService filmService;
-    GenreStorage genreStorage;
-    MpaStorage mpaStorage;
 
     @BeforeEach
     public void beforeEach() {
         storage = mock(FilmStorage.class);
         userStorage = mock(UserStorage.class);
-        genreStorage = mock(GenreStorage.class);
-        mpaStorage = mock(MpaStorage.class);
-        filmService = new FilmService(storage, userStorage, new ValidateService(), genreStorage, mpaStorage);
+        filmService = new FilmService(storage, userStorage, new ValidateService());
     }
 
     void assertEqualsFilm(Film o1, Film o2) {
@@ -75,9 +71,7 @@ class FilmServiceTest {
                 .duration(120)
                 .mpa(mpa)
                 .build();
-        when(mpaStorage.getMpaById(film.getMpa().getId())).thenReturn(Optional.of(mpa));
-        when(mpaStorage.getMpaById(secondFilm.getMpa().getId())).thenReturn(Optional.of(mpa));
-        when(mpaStorage.getMpaById(thirdFilm.getMpa().getId())).thenReturn(Optional.of(mpa));
+
         when(storage.getFilms()).thenReturn(List.of(film, secondFilm, thirdFilm));
         List<Film> expectedFilms = List.of(film, secondFilm, thirdFilm);
 
@@ -108,7 +102,6 @@ class FilmServiceTest {
                 .duration(120)
                 .mpa(mpa)
                 .build();
-        when(mpaStorage.getMpaById(film.getMpa().getId())).thenReturn(Optional.of(mpa));
         when(storage.getFilmById(film.getId())).thenReturn(Optional.of(film));
 
         Film actualFilm = filmService.getFilmById(1);
@@ -249,12 +242,7 @@ class FilmServiceTest {
                 .duration(120)
                 .mpa(mpa)
                 .build();
-        when(genreStorage.getAllGenresForFilm(film.getId())).thenReturn(List.of(genre));
-        when(genreStorage.getAllGenresForFilm(secondFilm.getId())).thenReturn(List.of(genre));
-        when(genreStorage.getAllGenresForFilm(thirdFilm.getId())).thenReturn(List.of(genre));
-        when(mpaStorage.getMpaById(film.getMpa().getId())).thenReturn(Optional.of(mpa));
-        when(mpaStorage.getMpaById(secondFilm.getMpa().getId())).thenReturn(Optional.of(mpa));
-        when(mpaStorage.getMpaById(thirdFilm.getMpa().getId())).thenReturn(Optional.of(mpa));
+
         when(storage.getPopularFilms(3)).thenReturn(List.of(film, secondFilm, thirdFilm));
         List<Film> expectedList = new ArrayList<>(List.of(film, secondFilm, thirdFilm));
 

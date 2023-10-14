@@ -23,61 +23,37 @@ public class FilmService {
 
     final FilmStorage filmStorage;
     final UserStorage userStorage;
-
-    final GenreStorage genreStorage;
-    final MpaStorage mpaStorage;
     final ValidateService validateService;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage")FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
-                       ValidateService validateService,
-                       GenreStorage genreStorage,
-                       MpaStorage mpaStorage) {
+                       ValidateService validateService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
-        this.genreStorage = genreStorage;
-        this.mpaStorage = mpaStorage;
         this.validateService = validateService;
     }
 
     public List<Film> getAll() {
-        List<Film> films = filmStorage.getFilms();
-        for (Film film : films) {
-            film.setGenres(genreStorage.getAllGenresForFilm(film.getId()));
-            Mpa filmMpa = mpaStorage.getMpaById(film.getMpa().getId())
-                    .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
-            film.setMpa(filmMpa);
-        }
-        return films;
+        return filmStorage.getFilms();
 
     }
 
     public Film getFilmById(int id) {
-        Film film = filmStorage.getFilmById(id)
+
+        return filmStorage.getFilmById(id)
                 .orElseThrow(() -> new NotFoundException("Такого фильма еще не существует в библиотеке"));
-        film.setGenres(genreStorage.getAllGenresForFilm(film.getId()));
-        Mpa filmMpa = mpaStorage.getMpaById(film.getMpa().getId())
-                        .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
-        film.setMpa(filmMpa);
-        return film;
     }
 
     public Film createFilm(Film film) {
         validateService.validateCreateFilm(film);
-        if (film.getGenres() == null) {
-            film.setGenres(new ArrayList<>());
-        }
         return filmStorage.createFilm(film);
     }
 
     public void updateFilm(Film film) {
         validateService.validateUpdateFilm(film);
         int filmId = film.getId();
-        if (film.getGenres() == null) {
-            film.setGenres(new ArrayList<>());
-        }
-        Film oldFilm = filmStorage.getFilmById(filmId)
+        filmStorage.getFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Такого фильма еще не существует в библиотеке"));
 
         filmStorage.updateFilm(film);
@@ -110,13 +86,7 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(Integer count) {
-        List<Film> films = filmStorage.getPopularFilms(count);
-        for (Film film : films) {
-            film.setGenres(genreStorage.getAllGenresForFilm(film.getId()));
-            Mpa filmMpa = mpaStorage.getMpaById(film.getMpa().getId())
-                    .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
-            film.setMpa(filmMpa);
-        }
-        return films;
+
+        return filmStorage.getPopularFilms(count);
     }
 }

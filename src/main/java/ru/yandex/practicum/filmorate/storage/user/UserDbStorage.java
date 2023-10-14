@@ -89,13 +89,15 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Optional<User> getUserById(int id) {
-        User user;
-        try {
-            String sqlQuery = "SELECT * FROM viewers WHERE viewer_id = ?";
-            user = operations.getJdbcOperations().queryForObject(sqlQuery, (rs, rowNum) -> makeUser(rs), id);
-        } catch (DataAccessException exp) {
+
+        String sqlQuery = "SELECT * FROM viewers WHERE viewer_id = ?";
+        List<User> users = operations.getJdbcOperations().query(sqlQuery, (rs, rowNum) -> makeUser(rs), id);
+
+        if (users.isEmpty()) {
             return Optional.empty();
         }
+        User user = users.get(0);
+
         return Optional.of(user);
 
     }

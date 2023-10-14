@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -16,18 +17,18 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest
+@JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class GenreDbStorageTest {
 
     private final GenreDbStorage genreDbStorage;
-    private final FilmDbStorage filmDbStorage;
 
     @Test
     public void createGenre_whenGenreIsCorrect_thanReturnGenre() {
@@ -133,52 +134,5 @@ class GenreDbStorageTest {
         List<Genre> genres = genreDbStorage.getAll();
 
         assertThat(firstGenre).isNotIn(genres);
-    }
-
-
-    @Test
-    public void getAllGenresForFilm_whenFilmHasGenres_thanReturnListOfGenres() {
-        genreDbStorage.deleteAllGenres();
-        Genre firstGenre = genreDbStorage.createGenre(new Genre(1, "Комедия"));
-        Genre secondGenre = genreDbStorage.createGenre(new Genre(2, "Драма"));
-        Mpa mpa = new Mpa(1, "G");
-        List<Genre> genres = new ArrayList<>();
-        genres.add(firstGenre);
-        genres.add(secondGenre);
-        Film film = Film.builder()
-                .name("niceName")
-                .description("its desc")
-                .releaseDate(LocalDate.of(1967, Month.MARCH, 25))
-                .duration(100)
-                .genres(genres)
-                .mpa(mpa)
-                .build();
-        Film createdFilm = filmDbStorage.createFilm(film);
-        int filmId = createdFilm.getId();
-
-        List<Genre> filmGenres = genreDbStorage.getAllGenresForFilm(filmId);
-
-        assertThat(filmGenres).isNotEmpty();
-        assertEquals(filmGenres.get(0).getId(), firstGenre.getId());
-        assertEquals(filmGenres.get(1).getId(), secondGenre.getId());
-    }
-
-    @Test
-    public void getAllGenresForFilm_whenFilmHasNoGenres_thanReturnEmptyList() {
-        Mpa mpa = new Mpa(1, "G");
-        Film film = Film.builder()
-                .name("niceName")
-                .description("its desc")
-                .releaseDate(LocalDate.of(1967, Month.MARCH, 25))
-                .duration(100)
-                .genres(new ArrayList<>())
-                .mpa(mpa)
-                .build();
-        Film createdFilm = filmDbStorage.createFilm(film);
-        int filmId = createdFilm.getId();
-
-        List<Genre> filmGenres = genreDbStorage.getAllGenresForFilm(filmId);
-
-        assertThat(filmGenres).isEmpty();
     }
 }

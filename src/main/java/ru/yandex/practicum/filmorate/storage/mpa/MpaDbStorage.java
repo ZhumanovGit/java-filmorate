@@ -47,13 +47,15 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Optional<Mpa> getMpaById(int id) {
-        Mpa mpa;
-        try {
-            String sqlQuery = "SELECT * FROM ratingMPA WHERE id = ?";
-            mpa = operations.getJdbcOperations().queryForObject(sqlQuery, (rs, rowNum) -> makeMpa(rs), id);
-        } catch (DataAccessException exp) {
+
+        String sqlQuery = "SELECT * FROM ratingMPA WHERE id = ?";
+        List<Mpa> mpas = operations.getJdbcOperations().query(sqlQuery, (rs, rowNum) -> makeMpa(rs), id);
+
+        if (mpas.isEmpty()) {
             return Optional.empty();
         }
+        Mpa mpa = mpas.get(0);
+
         return Optional.of(mpa);
     }
 
