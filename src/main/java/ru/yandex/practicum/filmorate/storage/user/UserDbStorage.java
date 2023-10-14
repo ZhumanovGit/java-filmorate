@@ -103,11 +103,13 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(User user, User friend) {
-        String sqlQuery = "INSERT INTO friendships (viewer_id, friend_id)" +
-                "VALUES (:userId, :friendId)";
+        String sqlQuery = "MERGE INTO friendships AS f USING " +
+                "(SELECT CAST(:user_id AS int) AS viewer_id, CAST(:friend_id AS int) AS friend_id) AS fs " +
+                "ON f.viewer_id = fs.viewer_id AND f.friend_id = fs.friend_id " +
+                "WHEN NOT MATCHED THEN INSERT (viewer_id, friend_id) values (:user_id, :friend_id)";
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("userId", user.getId())
-                .addValue("friendId", friend.getId());
+        params.addValue("user_id", user.getId())
+                .addValue("friend_id", friend.getId());
         operations.update(sqlQuery, params);
     }
 
