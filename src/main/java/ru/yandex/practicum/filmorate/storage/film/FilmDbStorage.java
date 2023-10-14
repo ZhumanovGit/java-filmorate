@@ -111,8 +111,7 @@ public class FilmDbStorage implements FilmStorage {
         for (Film film : films) {
             film.setGenres(genres.stream()
                     .filter(genre -> genre.getFilmId() == film.getId())
-                    .sorted()
-                    .collect(Collectors.toCollection(LinkedHashSet::new)));
+                    .collect(Collectors.toSet()));
         }
 
         return films;
