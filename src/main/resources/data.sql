@@ -1,6 +1,3 @@
-DROP TABLE IF EXISTS
-ratingMPA,
-genres;
 
 INSERT INTO genre (name) VALUES ('Комедия');
 INSERT INTO genre (name) VALUES ('Драма');
