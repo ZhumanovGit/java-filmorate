@@ -24,7 +24,7 @@ class GenreDbStorageTest {
 
     @Test
     public void createGenre_whenGenreIsCorrect_thanReturnGenre() {
-        Genre genre = new Genre(1, "Комедия");
+        Genre genre = Genre.builder().id(1).name("Комедия").build();
 
         Genre createdGenre = genreDbStorage.createGenre(genre);
         int genreId = createdGenre.getId();
@@ -46,7 +46,7 @@ class GenreDbStorageTest {
 
     @Test
     public void updateGenre_whenCalled_thanUpdateGenre() {
-        Genre genre = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre genre = genreDbStorage.createGenre(Genre.builder().id(1).name("Комедия").build());
         int genreId = genre.getId();
         Genre newGenre = Genre.builder()
                 .id(genreId)
@@ -61,7 +61,7 @@ class GenreDbStorageTest {
 
     @Test
     public void getGenreById_whenGenreIsFound_thanReturnOptionalWithGenre() {
-        Genre genre = genreDbStorage.createGenre(new Genre(1, "Комедия"));
+        Genre genre = genreDbStorage.createGenre(Genre.builder().id(1).name("Комедия").build());
         int genreId = genre.getId();
 
         Optional<Genre> optionalGenre = genreDbStorage.getGenreById(genreId);

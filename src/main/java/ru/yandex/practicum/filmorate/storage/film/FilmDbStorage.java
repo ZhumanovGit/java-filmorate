@@ -14,10 +14,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository("filmDbStorage")
@@ -114,7 +111,8 @@ public class FilmDbStorage implements FilmStorage {
         for (Film film : films) {
             film.setGenres(genres.stream()
                     .filter(genre -> genre.getFilmId() == film.getId())
-                    .collect(Collectors.toSet()));
+                    .sorted()
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
         }
 
         return films;
@@ -143,10 +141,9 @@ public class FilmDbStorage implements FilmStorage {
         SqlParameterSource needId = new MapSqlParameterSource("filmId", id);
 
         List<Genre> filmGenres = operations.query(sqlQueryForGenres, needId, (rs, rowNum) -> makeGenre(rs));
+        filmGenres.sort(Comparator.comparing(Genre::getId));
 
-        System.out.println(filmGenres);
-
-        film.setGenres(new HashSet<>(filmGenres));
+        film.setGenres(new LinkedHashSet<>(filmGenres));
 
         return Optional.of(film);
     }
@@ -161,6 +158,8 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE film_id = ?";
         int filmId = film.getId();
         operations.getJdbcOperations().update(sqlQuery, filmId, filmId);
+
+        System.out.println();
 
 
     }
@@ -180,9 +179,21 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        String sqlQuery = "SELECT * FROM films AS f " +
+
+        String sqlQuery = "SELECT f.film_id, " +
+                "f.film_name, " +
+                "f.description, " +
+                "f.release_date, " +
+                "f.duration_in_minutes, " +
+                "f.likes_count, " +
+                "f.rating_MPA_id, " +
+                "r.rating_name, " +
+                "COUNT(l.viewer_id) AS liked_users " +
+                "FROM films AS f " +
                 "JOIN ratingMPA AS r ON f.rating_MPA_id = r.id " +
-                "ORDER BY likes_count DESC " +
+                "LEFT JOIN likes AS l ON l.film_id = f.film_id " +
+                "GROUP BY f.film_id " +
+                "ORDER BY liked_users DESC " +
                 "LIMIT :limit";
         SqlParameterSource limit = new MapSqlParameterSource("limit", count);
         List<Film> films = operations.query(sqlQuery, limit, (rs, rowNUm) -> makeFilm(rs));
@@ -213,7 +224,7 @@ public class FilmDbStorage implements FilmStorage {
                 .releaseDate(rs.getDate("release_date").toLocalDate())
                 .duration(rs.getInt("duration_in_minutes"))
                 .rate(rs.getInt("likes_count"))
-                .genres(new HashSet<>())
+                .genres(new LinkedHashSet<>())
                 .mpa(mpa)
                 .build();
 
@@ -234,7 +245,8 @@ public class FilmDbStorage implements FilmStorage {
         }
         Set<Integer> uniqueGenreIds = film.getGenres().stream()
                 .map(Genre::getId)
-                .collect(Collectors.toSet());
+                .sorted()
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         StringBuilder sb = new StringBuilder("INSERT INTO film_genre(film_id, genre_id) VALUES ");
         MapSqlParameterSource genreParams = new MapSqlParameterSource();
