@@ -149,9 +149,15 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLike(Film film, User user) {
-        String sqlQueryForLikes = "INSERT INTO likes(film_id, viewer_id)" +
-                "VALUES (?, ?);";
-        operations.getJdbcOperations().update(sqlQueryForLikes, film.getId(), user.getId());
+        String sqlQueryForLikes = "MERGE INTO likes AS l USING " +
+                "(SELECT CAST(:film_id AS int) AS film_id, CAST(:user_id AS int) AS viewer_id) AS ls " +
+                "ON l.film_id = ls.film_id AND l.viewer_id = ls.viewer_id " +
+                "WHEN NOT MATCHED THEN INSERT (film_id, viewer_id) VALUES (:film_id, :user_id)";
+
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("film_id", film.getId())
+                .addValue("user_id", user.getId());
+        operations.update(sqlQueryForLikes, params);
 
         String sqlQuery = "UPDATE films SET likes_count = (SELECT COUNT(viewer_id) FROM likes WHERE film_id = ?)" +
                 "WHERE film_id = ?";
