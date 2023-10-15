@@ -105,11 +105,7 @@ public class UserService {
         User friend = storage.getUserById(friendId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
-        List<Integer> commonFriendsIds = storage.getMutualFriends(user, friend);
-        return commonFriendsIds.stream()
-                .map(item -> storage.getUserById(item)
-                        .orElseThrow(() -> new NotFoundException("Такого пользователя не существует")))
-                .collect(Collectors.toList());
+        return storage.getMutualFriends(user, friend);
 
     }
 

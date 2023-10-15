@@ -135,17 +135,23 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public List<Integer> getMutualFriends(User user, User friend) {
-        String sqlQuery = "SELECT f1.friend_id AS common_friends " +
+    public List<User> getMutualFriends(User user, User friend) {
+        String sqlQuery = "SELECT f1.friend_id AS common_friends, " +
+                "v.viewer_id, " +
+                "v.viewer_name, " +
+                "v.email, " +
+                "v.login, " +
+                "v.birthday " +
                 "FROM friendships AS f1 " +
                 "JOIN friendships AS f2 ON f1.friend_id = f2.friend_id " +
+                "JOIN viewers AS v ON common_friends = v.viewer_id " +
                 "WHERE f1.viewer_id = :userId " +
                 "AND f2.viewer_id = :friendId ";
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("userId", user.getId())
                 .addValue("friendId", friend.getId());
 
-        return operations.query(sqlQuery, params, (rs, rowNum) -> rs.getInt("common_friends"));
+        return operations.query(sqlQuery, params, (rs, rowNum) -> makeUser(rs));
     }
 
     private User makeUser(ResultSet rs) throws SQLException {
