@@ -125,14 +125,16 @@ class FilmServiceTest {
 
     @Test
     public void createFilm_whenValidationWasSuccess_thenReturnedFilm() {
+        Mpa mpa = new Mpa(1, "test");
         Film film = Film.builder()
                 .id(1)
                 .name("testFilm")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
-                .mpa(new Mpa(1, "test"))
+                .mpa(mpa)
                 .build();
+        when(mpaStorage.getMpaById(1)).thenReturn(Optional.of(mpa));
         when(storage.createFilm(film)).thenReturn(film);
 
         Film actualFilm = filmService.createFilm(film);
@@ -157,13 +159,14 @@ class FilmServiceTest {
 
     @Test
     public void likeFilm_whenUserAndFilmIsCorrect_thenAdd1toLikesCount() {
+        Mpa mpa = new Mpa(1, "test");
         Film film = Film.builder()
                 .id(1)
                 .name("name")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
-                .mpa(new Mpa(1, "test"))
+                .mpa(mpa)
                 .build();
         User user = User.builder()
                 .id(1)
@@ -171,6 +174,7 @@ class FilmServiceTest {
                 .email("email@ru")
                 .birthday(LocalDate.of(2000, 1, 1))
                 .build();
+        when(mpaStorage.getMpaById(1)).thenReturn(Optional.of(mpa));
         when(storage.createFilm(film)).thenReturn(film);
         filmService.createFilm(film);
         when(storage.getFilmById(film.getId())).thenReturn(Optional.of(film));
@@ -183,13 +187,14 @@ class FilmServiceTest {
 
     @Test
     public void unlikeFilm_whenUserAndFilmIsCorrect_thenRemove1fromLikesCount() {
+        Mpa mpa = new Mpa(1, "test");
         Film film = Film.builder()
                 .id(1)
                 .name("name")
                 .description("test desc for film")
                 .releaseDate(LocalDate.of(2000, Month.JANUARY, 1))
                 .duration(120)
-                .mpa(new Mpa(1, "test"))
+                .mpa(mpa)
                 .build();
         User user = User.builder()
                 .id(1)
@@ -197,6 +202,7 @@ class FilmServiceTest {
                 .email("email@ru")
                 .birthday(LocalDate.of(2000, 1, 1))
                 .build();
+        when(mpaStorage.getMpaById(1)).thenReturn(Optional.of(mpa));
         when(storage.createFilm(film)).thenReturn(film);
         filmService.createFilm(film);
         when(storage.getFilmById(1)).thenReturn(Optional.of(film));
