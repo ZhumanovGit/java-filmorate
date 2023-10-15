@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -26,12 +28,16 @@ class FilmServiceTest {
     FilmStorage storage;
     UserStorage userStorage;
     FilmService filmService;
+    MpaStorage mpaStorage;
+    GenreStorage genreStorage;
 
     @BeforeEach
     public void beforeEach() {
         storage = mock(FilmStorage.class);
         userStorage = mock(UserStorage.class);
-        filmService = new FilmService(storage, userStorage, new ValidationService());
+        mpaStorage = mock(MpaStorage.class);
+        genreStorage = mock(GenreStorage.class);
+        filmService = new FilmService(storage, userStorage, mpaStorage, genreStorage, new ValidationService());
     }
 
     void assertEqualsFilm(Film o1, Film o2) {

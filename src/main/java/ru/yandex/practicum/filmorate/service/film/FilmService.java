@@ -2,16 +2,17 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 
 @Service
@@ -20,15 +21,22 @@ public class FilmService {
 
     final FilmStorage filmStorage;
     final UserStorage userStorage;
+    final MpaStorage mpaStorage;
+    final GenreStorage genreStorage;
     final ValidationService validationService;
 
+
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage,
+    public FilmService(FilmStorage filmStorage,
+                       UserStorage userStorage,
+                       MpaStorage mpaStorage,
+                       GenreStorage genreStorage,
                        ValidationService validationService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.validationService = validationService;
+        this.mpaStorage = mpaStorage;
+        this.genreStorage = genreStorage;
     }
 
     public List<Film> getAll() {
@@ -45,8 +53,14 @@ public class FilmService {
     public Film createFilm(Film film) {
         validationService.validateCreateFilm(film);
 
-        if (film.getGenres() == null) {
-            film.setGenres(new LinkedHashSet<>());
+        mpaStorage.getMpaById(film.getMpa().getId())
+                .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
+
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
+                genreStorage.getGenreById(genre.getId())
+                        .orElseThrow(() -> new NotFoundException("Такого жанра не существует"));
+            }
         }
 
         return filmStorage.createFilm(film);
@@ -55,8 +69,14 @@ public class FilmService {
     public void updateFilm(Film film) {
         validationService.validateUpdateFilm(film);
 
-        if (film.getGenres() == null) {
-            film.setGenres(new LinkedHashSet<>());
+        mpaStorage.getMpaById(film.getMpa().getId())
+                .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
+
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
+                genreStorage.getGenreById(genre.getId())
+                        .orElseThrow(() -> new NotFoundException("Такого жанра не существует"));
+            }
         }
 
         int filmId = film.getId();
