@@ -5,10 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.ValidateService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,12 +19,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserService {
     final UserStorage storage;
-    final ValidateService validateService;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage storage, ValidateService validateService) {
+    public UserService(@Qualifier("userDbStorage") UserStorage storage) {
         this.storage = storage;
-        this.validateService = validateService;
     }
 
     public List<User> getAll() {
@@ -36,7 +35,7 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        validateService.validateCreateUser(user);
+        validateCreateUser(user);
 
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
@@ -46,7 +45,7 @@ public class UserService {
     }
 
     public void updateUser(User user) {
-        validateService.validateUpdateUser(user);
+        validateUpdateUser(user);
         int userId = user.getId();
         storage.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
@@ -102,19 +101,62 @@ public class UserService {
     }
 
     public List<User> getMutualFriends(int id, int friendId) {
-        List<User> userList = getUserFriends(id);
-        List<User> friendList = getUserFriends(friendId);
+        User user = storage.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
+        User friend = storage.getUserById(friendId)
+                .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
 
-        if (userList.isEmpty() || friendList.isEmpty()) {
-            return Collections.emptyList();
+        List<Integer> commonFriendsIds = storage.getMutualFriends(user, friend);
+        return commonFriendsIds.stream()
+                .map(item -> storage.getUserById(item)
+                        .orElseThrow(() -> new NotFoundException("Такого пользователя не существует")))
+                .collect(Collectors.toList());
+
+    }
+
+    private void validateCreateUser(User user) {
+        if (user.getEmail() == null) {
+            log.warn("ValidationException, Почта null");
+            throw new ValidateException("Пользователь не имеет почту");
         }
 
-        List<Integer> friendsListIds = friendList.stream()
-                .map(User::getId)
-                .collect(Collectors.toList());
+        if (user.getEmail().isBlank()) {
+            log.warn("ValidationException, Почта пустая");
+            throw new ValidateException("Почта не может быть пустой");
+        }
 
-        return userList.stream()
-                .filter(item -> friendsListIds.contains(item.getId()))
-                .collect(Collectors.toList());
+        if (!user.getEmail().contains("@")) {
+            log.warn("ValidationException, Почта не содержит @");
+            throw new ValidateException("Почта должна содержать знак @");
+        }
+
+        if (user.getLogin() == null) {
+            log.warn("ValidationException, Логин null");
+            throw new ValidateException("Пользователь не имеет логин");
+        }
+
+        if (user.getLogin().isBlank()) {
+            log.warn("ValidationException, Логин пустой");
+            throw new ValidateException("Логин не может быть пустым");
+        }
+
+        if (user.getLogin().contains(" ")) {
+            log.warn("ValidationException, Логин содержит пробелы");
+            throw new ValidateException("Логин не может содержать пробелы");
+        }
+
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            log.warn("ValidationException, Некорректная дата");
+            throw new ValidateException("Некорректная дата рождения");
+        }
+    }
+
+    private void validateUpdateUser(User user) {
+        validateCreateUser(user);
+
+        if (user.getId() == null) {
+            log.warn("ValidationException, не передан id пользователя");
+            throw new ValidateException("Не найден id для PUT запроса");
+        }
     }
 }
