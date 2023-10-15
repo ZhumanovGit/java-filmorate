@@ -144,7 +144,7 @@ public class UserDbStorage implements UserStorage {
                 "v.birthday " +
                 "FROM friendships AS f1 " +
                 "JOIN friendships AS f2 ON f1.friend_id = f2.friend_id " +
-                "JOIN viewers AS v ON common_friends = v.viewer_id " +
+                "JOIN viewers AS v ON f1.friend_id = v.viewer_id " +
                 "WHERE f1.viewer_id = :userId " +
                 "AND f2.viewer_id = :friendId ";
         MapSqlParameterSource params = new MapSqlParameterSource();
