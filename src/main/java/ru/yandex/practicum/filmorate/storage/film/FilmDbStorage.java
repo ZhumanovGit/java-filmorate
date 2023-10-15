@@ -103,15 +103,21 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Film> films = operations.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
 
+        Map<Integer, Film> filmMap = new HashMap<>();
+        for (Film film : films) {
+            filmMap.put(film.getId(), film);
+        }
         String sqlQueryForGenres = "SELECT fg.film_id, g.id, g.name FROM film_genre AS fg " +
                 "JOIN genre AS g ON fg.genre_id = g.id ";
 
         List<Genre> genres = operations.query(sqlQueryForGenres, (rs, rowNum) -> makeGenre(rs));
 
-        for (Film film : films) {
-            film.setGenres(genres.stream()
-                    .filter(genre -> genre.getFilmId() == film.getId())
-                    .collect(Collectors.toSet()));
+        for (Genre genre : genres) {
+            Film film = filmMap.get(genre.getFilmId());
+            Set<Genre> newGenres = film.getGenres();
+            newGenres.add(genre);
+            film.setGenres(newGenres);
+
         }
 
         return films;
@@ -123,8 +129,9 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "SELECT * " +
                 "FROM films AS f " +
                 "JOIN ratingMPA AS r ON f.rating_MPA_id = r.id " +
-                "WHERE film_id = ?;";
-        List<Film> films = operations.getJdbcOperations().query(sqlQuery, (rs, rowNum) -> makeFilm(rs), id);
+                "WHERE film_id = :filmId ;";
+        SqlParameterSource filmId = new MapSqlParameterSource("filmId", id);
+        List<Film> films = operations.query(sqlQuery, filmId, (rs, rowNum) -> makeFilm(rs));
 
         if (films.isEmpty()) {
             return Optional.empty();
@@ -257,9 +264,9 @@ public class FilmDbStorage implements FilmStorage {
         MapSqlParameterSource genreParams = new MapSqlParameterSource();
         int counter = 0;
         for (int genreId : uniqueGenreIds) {
-            sb.append("(:film_id, :genre_id").append(counter).append("), ");
+            sb.append("(:film_id, :genre_id_").append(counter).append("), ");
             genreParams.addValue("film_id", film.getId());
-            genreParams.addValue("genre_id" + counter, genreId);
+            genreParams.addValue("genre_id_" + counter, genreId);
             counter++;
         }
         sb.deleteCharAt(sb.length() - 2);

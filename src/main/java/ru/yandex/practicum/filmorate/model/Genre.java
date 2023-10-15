@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 @Builder
@@ -21,5 +23,10 @@ public class Genre {
         if (o == null || getClass() != o.getClass()) return false;
         Genre genre = (Genre) o;
         return id == genre.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

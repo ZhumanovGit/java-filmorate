@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -131,6 +132,20 @@ public class UserDbStorage implements UserStorage {
                 .map(FriendShip::getFriend)
                 .map(User::getId)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Integer> getMutualFriends(User user, User friend) {
+        String sqlQuery = "SELECT f1.friend_id AS common_friends " +
+                "FROM friendships AS f1 " +
+                "JOIN friendships AS f2 ON f1.friend_id = f2.friend_id " +
+                "WHERE f1.viewer_id = :userId " +
+                "AND f2.viewer_id = :friendId ";
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("userId", user.getId())
+                .addValue("friendId", friend.getId());
+
+        return operations.query(sqlQuery, params, (rs, rowNum) -> rs.getInt("common_friends"));
     }
 
     private User makeUser(ResultSet rs) throws SQLException {
