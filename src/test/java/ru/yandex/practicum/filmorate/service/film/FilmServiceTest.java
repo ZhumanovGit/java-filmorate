@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -30,7 +31,7 @@ class FilmServiceTest {
     public void beforeEach() {
         storage = mock(FilmStorage.class);
         userStorage = mock(UserStorage.class);
-        filmService = new FilmService(storage, userStorage);
+        filmService = new FilmService(storage, userStorage, new ValidationService());
     }
 
     void assertEqualsFilm(Film o1, Film o2) {

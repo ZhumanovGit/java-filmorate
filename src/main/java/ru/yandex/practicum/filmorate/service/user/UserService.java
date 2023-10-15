@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -18,10 +19,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserService {
     final UserStorage storage;
+    final ValidationService validationService;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage storage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage storage, ValidationService validationService) {
         this.storage = storage;
+        this.validationService = validationService;
     }
 
     public List<User> getAll() {
@@ -34,7 +37,7 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        validateCreateUser(user);
+        validationService.validateCreateUser(user);
 
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
@@ -44,7 +47,7 @@ public class UserService {
     }
 
     public void updateUser(User user) {
-        validateUpdateUser(user);
+        validationService.validateUpdateUser(user);
         int userId = user.getId();
         storage.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Такого пользователя не существует"));
@@ -107,51 +110,5 @@ public class UserService {
 
         return storage.getMutualFriends(user, friend);
 
-    }
-
-    private void validateCreateUser(User user) {
-        if (user.getEmail() == null) {
-            log.warn("ValidationException, Почта null");
-            throw new ValidateException("Пользователь не имеет почту");
-        }
-
-        if (user.getEmail().isBlank()) {
-            log.warn("ValidationException, Почта пустая");
-            throw new ValidateException("Почта не может быть пустой");
-        }
-
-        if (!user.getEmail().contains("@")) {
-            log.warn("ValidationException, Почта не содержит @");
-            throw new ValidateException("Почта должна содержать знак @");
-        }
-
-        if (user.getLogin() == null) {
-            log.warn("ValidationException, Логин null");
-            throw new ValidateException("Пользователь не имеет логин");
-        }
-
-        if (user.getLogin().isBlank()) {
-            log.warn("ValidationException, Логин пустой");
-            throw new ValidateException("Логин не может быть пустым");
-        }
-
-        if (user.getLogin().contains(" ")) {
-            log.warn("ValidationException, Логин содержит пробелы");
-            throw new ValidateException("Логин не может содержать пробелы");
-        }
-
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("ValidationException, Некорректная дата");
-            throw new ValidateException("Некорректная дата рождения");
-        }
-    }
-
-    private void validateUpdateUser(User user) {
-        validateCreateUser(user);
-
-        if (user.getId() == null) {
-            log.warn("ValidationException, не передан id пользователя");
-            throw new ValidateException("Не найден id для PUT запроса");
-        }
     }
 }

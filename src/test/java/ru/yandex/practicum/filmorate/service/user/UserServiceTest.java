@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -25,7 +26,7 @@ class UserServiceTest {
     @BeforeEach
     public void beforeEach() {
         storage = mock(UserStorage.class);
-        userService = new UserService(storage);
+        userService = new UserService(storage, new ValidationService());
     }
 
     void assertEqualsUser(User o1, User o2) {

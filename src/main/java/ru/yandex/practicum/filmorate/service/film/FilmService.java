@@ -8,11 +8,13 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.ValidationService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Service
@@ -21,12 +23,15 @@ public class FilmService {
 
     final FilmStorage filmStorage;
     final UserStorage userStorage;
+    final ValidationService validationService;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage) {
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       ValidationService validationService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.validationService = validationService;
     }
 
     public List<Film> getAll() {
@@ -41,12 +46,22 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
-        validateCreateFilm(film);
+        validationService.validateCreateFilm(film);
+
+        if (film.getGenres() == null) {
+            film.setGenres(new LinkedHashSet<>());
+        }
+
         return filmStorage.createFilm(film);
     }
 
     public void updateFilm(Film film) {
-        validateUpdateFilm(film);
+        validationService.validateUpdateFilm(film);
+
+        if (film.getGenres() == null) {
+            film.setGenres(new LinkedHashSet<>());
+        }
+
         int filmId = film.getId();
         filmStorage.getFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Такого фильма еще не существует в библиотеке"));
@@ -83,50 +98,5 @@ public class FilmService {
     public List<Film> getPopularFilms(Integer count) {
 
         return filmStorage.getPopularFilms(count);
-    }
-
-    private void validateCreateFilm(Film film) {
-        if (film.getName() == null) {
-            log.warn("ValidationException, Название null");
-            throw new ValidateException("Фильм не имеет названия");
-        }
-
-        if (film.getName().isBlank()) {
-            log.warn("ValidationException, Название пустое");
-            throw new ValidateException("Название не может быть пустым");
-        }
-
-        if (film.getDescription().length() > 200) {
-            log.warn("ValidationException, Слишком длинное описание");
-            throw new ValidateException("Описание не может быть длиннее 200 символов");
-        }
-
-        if (film.getReleaseDate() == null) {
-            log.warn("ValidationException, Нет даты выхода");
-            throw new ValidateException("Фильм не может не иметь даты выхода");
-        }
-
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, Month.DECEMBER, 28))) {
-            log.warn("ValidationException, Некорректная дата выхода");
-            throw new ValidateException("Фильм не мог выйти раньше 28 декабря 1895 года");
-        }
-
-        if (film.getDuration() <= 0) {
-            log.warn("ValidationException, отрицательная продолжительность фильма");
-            throw new ValidateException("Продолжительность не может быть отрицательной");
-        }
-
-        if (film.getMpa() == null) {
-            log.warn("ValidationException, фильм не имеет возрастного рейтинга");
-            throw new ValidateException("Возраcтной рейтинг не указан");
-        }
-    }
-
-    private void validateUpdateFilm(Film film) {
-        validateCreateFilm(film);
-        if (film.getId() == null) {
-            log.warn("ValidationException, не передан id фильма");
-            throw new ValidateException("Не найден id для PUT запроса");
-        }
     }
 }
