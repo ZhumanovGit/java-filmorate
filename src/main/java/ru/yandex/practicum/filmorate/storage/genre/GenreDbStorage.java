@@ -48,8 +48,9 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public Optional<Genre> getGenreById(int id) {
 
-        String sqlQuery = "SELECT * FROM genre WHERE id = ?";
-        List<Genre> genres = operations.getJdbcOperations().query(sqlQuery, (rs, rowNum) -> makeGenre(rs), id);
+        String sqlQuery = "SELECT * FROM genre WHERE id = :genreId";
+        SqlParameterSource genreId = new MapSqlParameterSource("genreId", id);
+        List<Genre> genres = operations.query(sqlQuery, genreId, (rs, rowNum) -> makeGenre(rs));
 
         if (genres.isEmpty()) {
             return Optional.empty();

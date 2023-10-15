@@ -47,8 +47,9 @@ public class MpaDbStorage implements MpaStorage {
     @Override
     public Optional<Mpa> getMpaById(int id) {
 
-        String sqlQuery = "SELECT * FROM ratingMPA WHERE id = ?";
-        List<Mpa> mpas = operations.getJdbcOperations().query(sqlQuery, (rs, rowNum) -> makeMpa(rs), id);
+        String sqlQuery = "SELECT * FROM ratingMPA WHERE id = :mpaId";
+        SqlParameterSource mpaId = new MapSqlParameterSource("mpaId", id);
+        List<Mpa> mpas = operations.query(sqlQuery, mpaId, (rs, rowNum) -> makeMpa(rs));
 
         if (mpas.isEmpty()) {
             return Optional.empty();
