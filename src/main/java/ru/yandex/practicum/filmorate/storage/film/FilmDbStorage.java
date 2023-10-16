@@ -103,22 +103,7 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Film> films = operations.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
 
-        Map<Integer, Film> filmMap = new HashMap<>();
-        for (Film film : films) {
-            filmMap.put(film.getId(), film);
-        }
-        String sqlQueryForGenres = "SELECT fg.film_id, g.id, g.name FROM film_genre AS fg " +
-                "JOIN genre AS g ON fg.genre_id = g.id ";
-
-        List<Genre> genres = operations.query(sqlQueryForGenres, (rs, rowNum) -> makeGenre(rs));
-
-        for (Genre genre : genres) {
-            Film film = filmMap.get(genre.getFilmId());
-            Set<Genre> newGenres = film.getGenres();
-            newGenres.add(genre);
-            film.setGenres(newGenres);
-
-        }
+        loadGenres(films);
 
         return films;
     }
@@ -210,16 +195,7 @@ public class FilmDbStorage implements FilmStorage {
         SqlParameterSource limit = new MapSqlParameterSource("limit", count);
         List<Film> films = operations.query(sqlQuery, limit, (rs, rowNUm) -> makeFilm(rs));
 
-        String sqlQueryForGenres = "SELECT fg.film_id, g.id, g.name FROM film_genre AS fg " +
-                "JOIN genre AS g ON fg.genre_id = g.id ";
-
-        List<Genre> genres = operations.query(sqlQueryForGenres, (rs, rowNum) -> makeGenre(rs));
-
-        for (Film film : films) {
-            film.setGenres(genres.stream()
-                    .filter(genre -> genre.getFilmId() == film.getId())
-                    .collect(Collectors.toSet()));
-        }
+        loadGenres(films);
 
         return films;
     }
@@ -244,7 +220,6 @@ public class FilmDbStorage implements FilmStorage {
 
     private Genre makeGenre(ResultSet rs) throws SQLException {
         return Genre.builder()
-                .filmId(rs.getInt("film_id"))
                 .id(rs.getInt("id"))
                 .name(rs.getString("name"))
                 .build();
@@ -271,5 +246,21 @@ public class FilmDbStorage implements FilmStorage {
         }
         sb.deleteCharAt(sb.length() - 2);
         operations.update(sb.toString(), genreParams);
+    }
+
+    private void loadGenres(List<Film> films) {
+        Map<Integer, Film> filmMap = new HashMap<>();
+        for (Film film : films) {
+            filmMap.put(film.getId(), film);
+        }
+        String sqlQueryForGenres = "SELECT fg.film_id, g.id, g.name FROM film_genre AS fg " +
+                "JOIN genre AS g ON fg.genre_id = g.id ";
+
+        operations.query(sqlQueryForGenres, (rs, rowNum) -> {
+            Film film = filmMap.get(rs.getInt("film_id"));
+            film.getGenres().add(new Genre(rs.getInt("id"), rs.getString("name")));
+
+            return film;
+        });
     }
 }

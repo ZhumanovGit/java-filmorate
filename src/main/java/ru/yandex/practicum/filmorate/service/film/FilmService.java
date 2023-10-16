@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -57,10 +58,10 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
 
         if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                genreStorage.getGenreById(genre.getId())
-                        .orElseThrow(() -> new NotFoundException("Такого жанра не существует"));
-            }
+            List<Integer> genresIds = film.getGenres().stream()
+                    .map(Genre::getId)
+                    .collect(Collectors.toList());
+            genreStorage.getGenresById(genresIds);
         }
 
         return filmStorage.createFilm(film);

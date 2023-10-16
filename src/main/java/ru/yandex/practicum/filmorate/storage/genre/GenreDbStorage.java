@@ -61,6 +61,14 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
+    public List<Genre> getGenresById(List<Integer> ids) {
+        String sqlQuery = "SELECT * FROM genre WHERE id in (:ids )";
+        SqlParameterSource filmIds = new MapSqlParameterSource("ids", ids);
+        return operations.query(sqlQuery, filmIds, (rs, rowNum) -> makeGenre(rs));
+
+    }
+
+    @Override
     public List<Genre> getAll() {
         String sqlQuery = "SELECT * FROM genre";
 

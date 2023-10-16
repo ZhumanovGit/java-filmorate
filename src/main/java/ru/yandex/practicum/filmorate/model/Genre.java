@@ -14,7 +14,6 @@ import java.util.Objects;
 public class Genre {
 
     private int id;
-    private int filmId;
     private String name;
 
     @Override

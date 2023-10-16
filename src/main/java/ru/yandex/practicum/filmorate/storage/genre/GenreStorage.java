@@ -13,6 +13,8 @@ public interface GenreStorage {
 
     Optional<Genre> getGenreById(int id);
 
+    List<Genre> getGenresById(List<Integer> ids);
+
     List<Genre> getAll();
 
     void deleteAllGenres();
