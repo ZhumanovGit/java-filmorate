@@ -9,7 +9,7 @@ public interface UserStorage {
 
     User createUser(User user);
 
-    User updateUser(User user);
+    void updateUser(User user);
 
     void deleteUser(int id);
 
@@ -24,4 +24,6 @@ public interface UserStorage {
     void deleteFriend(User user, User friend);
 
     List<Integer> getUserFriends(int id);
+
+    List<User> getMutualFriends(User user, User friend);
 }

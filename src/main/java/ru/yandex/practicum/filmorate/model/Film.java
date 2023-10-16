@@ -1,11 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Builder
 public class Film {
     private Integer id;
@@ -13,5 +17,9 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private int duration;
-    private int likesCount;
+    private int rate;
+    @Builder.Default
+    private Set<Genre> genres = new LinkedHashSet<>();
+    private Mpa mpa;
 }
+
