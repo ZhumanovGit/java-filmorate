@@ -57,12 +57,7 @@ public class FilmService {
         mpaStorage.getMpaById(film.getMpa().getId())
                 .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
 
-        if (film.getGenres() != null) {
-            List<Integer> genresIds = film.getGenres().stream()
-                    .map(Genre::getId)
-                    .collect(Collectors.toList());
-            genreStorage.getGenresById(genresIds);
-        }
+        loadGenres(film);
 
         return filmStorage.createFilm(film);
     }
@@ -73,12 +68,7 @@ public class FilmService {
         mpaStorage.getMpaById(film.getMpa().getId())
                 .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
 
-        if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                genreStorage.getGenreById(genre.getId())
-                        .orElseThrow(() -> new NotFoundException("Такого жанра не существует"));
-            }
-        }
+        loadGenres(film);
 
         int filmId = film.getId();
         filmStorage.getFilmById(filmId)
@@ -116,5 +106,18 @@ public class FilmService {
     public List<Film> getPopularFilms(Integer count) {
 
         return filmStorage.getPopularFilms(count);
+    }
+
+    private void loadGenres(Film film) {
+        if (film.getGenres() != null) {
+            List<Integer> genresIds = film.getGenres().stream()
+                    .map(Genre::getId)
+                    .collect(Collectors.toList());
+            List<Genre> genres = genreStorage.getGenresById(genresIds);
+
+            if (genresIds.size() != genres.size()) {
+                throw new NotFoundException("Найдены не все жанры");
+            }
+        }
     }
 }
