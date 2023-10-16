@@ -57,7 +57,7 @@ public class FilmService {
         mpaStorage.getMpaById(film.getMpa().getId())
                 .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
 
-        loadGenres(film);
+        checkGenres(film);
 
         return filmStorage.createFilm(film);
     }
@@ -68,7 +68,7 @@ public class FilmService {
         mpaStorage.getMpaById(film.getMpa().getId())
                 .orElseThrow(() -> new NotFoundException("Такого рейтинга не существует"));
 
-        loadGenres(film);
+        checkGenres(film);
 
         int filmId = film.getId();
         filmStorage.getFilmById(filmId)
@@ -108,7 +108,7 @@ public class FilmService {
         return filmStorage.getPopularFilms(count);
     }
 
-    private void loadGenres(Film film) {
+    private void checkGenres(Film film) {
         if (film.getGenres() != null) {
             List<Integer> genresIds = film.getGenres().stream()
                     .map(Genre::getId)
